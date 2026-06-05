@@ -37,7 +37,12 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
             <Link href="/contact" className={styles.footerLink}>Contact</Link>
           </div>
         </div>
-        <p className={styles.footerCopy}>© {new Date().getFullYear()} StoryShare. All rights reserved.</p>
+        <div className={styles.footerBottom}>
+          <p className={styles.footerCopy}>© {new Date().getFullYear()} StoryShare. All rights reserved.</p>
+          <p className={styles.footerCredits}>
+            Created with <span className={styles.heart}>♥</span> by Stefin
+          </p>
+        </div>
       </footer>
     </div>
   );
