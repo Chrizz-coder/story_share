@@ -1,0 +1,141 @@
+/* landing.module.css */
+
+/* ── Wrapper ── */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.headerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #667eea;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.logoIcon {
+  font-size: 22px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.navLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.navLink:hover { color: #667eea; }
+
+.signInBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+}
+.signInBtn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ── Footer ── */
+.footer {
+  background: #0f0f1a;
+  color: #9ca3af;
+  padding: 48px 24px 24px;
+  margin-top: auto;
+}
+
+.footerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 24px;
+}
+
+.footerBrand { display: flex; flex-direction: column; gap: 8px; }
+.footerBrandName { font-size: 18px; font-weight: 800; color: #fff; }
+.footerTagline { font-size: 13px; color: #6b7280; }
+
+.footerLinks {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.footerLink {
+  font-size: 14px;
+  color: #9ca3af;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footerLink:hover { color: #667eea; }
+
+.footerCopy {
+  max-width: 1200px;
+  margin: 0 auto;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+/* ── Dark mode ── */
+@media (prefers-color-scheme: dark) {
+  .header {
+    background: rgba(17, 24, 39, 0.9);
+    border-bottom-color: rgba(255,255,255,0.06);
+  }
+  .navLink { color: #e5e7eb; }
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .navLink { display: none; }
+  .headerInner { padding: 0 16px; }
+}

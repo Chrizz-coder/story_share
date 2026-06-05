@@ -1,0 +1,27 @@
+import type { Metadata } from 'next';
+import './globals.css';
+import ApolloWrapper from '@/components/ApolloWrapper';
+
+export const metadata: Metadata = {
+  title: 'StoryShare — Create & Share Your Moments',
+  description:
+    'Join thousands sharing their most memorable moments. Premium stories, real-time reactions, and beautiful 24-hour content.',
+  keywords: 'stories, sharing, social, moments, creator platform',
+  openGraph: {
+    title: 'StoryShare — Create & Share Your Moments',
+    description: 'Join thousands sharing their most memorable moments.',
+    type: 'website',
+  },
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <ApolloWrapper>
+          {children}
+        </ApolloWrapper>
+      </body>
+    </html>
+  );
+}
