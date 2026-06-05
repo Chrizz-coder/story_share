@@ -3,6 +3,7 @@ import { GraphQLScalarType, Kind } from 'graphql';
 import { typeDefs } from './typeDefs';
 import { QueryResolvers } from './resolvers/query';
 import { PaymentMutations } from './resolvers/payment';
+import { ProposalQueries, ProposalMutations } from './resolvers/proposal';
 
 const DateScalar = new GraphQLScalarType({
   name: 'Date',
@@ -22,9 +23,13 @@ const DateScalar = new GraphQLScalarType({
 
 const resolvers = {
   Date: DateScalar,
-  Query: QueryResolvers,
+  Query: {
+    ...QueryResolvers,
+    ...ProposalQueries,
+  },
   Mutation: {
     ...PaymentMutations,
+    ...ProposalMutations,
   },
 };
 

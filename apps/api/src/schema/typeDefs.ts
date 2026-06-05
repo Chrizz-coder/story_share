@@ -38,9 +38,34 @@ export const typeDefs = gql`
     paymentId: String!
   }
 
+  type Proposal {
+    id: ID!
+    recipientName: String!
+    senderName: String!
+    template: String!
+    customMessage: String!
+    theme: String!
+    music: String!
+    photoData: String
+    viewCount: Int!
+    accepted: Boolean!
+    createdAt: Date!
+  }
+
+  input ProposalInput {
+    recipientName: String!
+    senderName: String!
+    template: String!
+    customMessage: String!
+    theme: String!
+    music: String!
+    photoData: String
+  }
+
   type Query {
     hello: String!
     me: User
+    getProposal(id: ID!): Proposal
   }
 
   type Mutation {
@@ -57,5 +82,9 @@ export const typeDefs = gql`
       paymentId: String!
       signature: String!
     ): PaymentSuccess!
+
+    createProposal(input: ProposalInput!): Proposal!
+    acceptProposal(id: ID!): Proposal!
+    incrementViewCount(id: ID!): Proposal!
   }
 `;

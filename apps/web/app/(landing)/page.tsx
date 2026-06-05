@@ -56,8 +56,8 @@ export default function LandingPage() {
             <button id="hero-cta" className={styles.ctaBtn} onClick={scrollToPricing}>
               Get Started
             </button>
-            <a href="#features" className={styles.ctaSecondary}>
-              See how it works →
+            <a href="/proposal/create" className={styles.ctaSecondary}>
+              Create a Proposal ✦
             </a>
           </div>
 

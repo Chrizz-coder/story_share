@@ -1,0 +1,308 @@
+/* proposal.module.css */
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+  position: relative;
+  font-family: inherit;
+}
+
+/* Background Layers */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transition: background 0.8s ease;
+}
+
+/* Themes backgrounds */
+.themeRoseGlow {
+  background: radial-gradient(circle at 30% 30%, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+}
+.themeSunsetGold {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+.themeMidnightStars {
+  background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+}
+.themeNeonDream {
+  background: linear-gradient(135deg, #0f0c1b 0%, #1a0f30 50%, #05040a 100%);
+}
+
+/* Particle Canvas Overlay */
+.canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Glassmorphism Presentation Card */
+.card {
+  position: relative;
+  z-index: 3;
+  width: min(520px, 100%);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 32px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  text-align: center;
+  animation: cardFadeIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Midnight theme card adjustments */
+.cardMidnight {
+  background: rgba(15, 23, 42, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset !important;
+}
+
+/* Neon theme card adjustments */
+.cardNeon {
+  background: rgba(13, 8, 24, 0.65) !important;
+  border-color: rgba(241, 7, 163, 0.2) !important;
+  box-shadow: 0 32px 80px rgba(123, 47, 247, 0.25), 0 0 20px rgba(241, 7, 163, 0.1) inset !important;
+}
+
+/* Content Elements */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--brand-mid);
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-sm);
+}
+.cardMidnight .badge {
+  color: #ff7eb3;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.cardNeon .badge {
+  color: #f107a3;
+  background: rgba(241, 7, 163, 0.1);
+  border-color: rgba(241, 7, 163, 0.25);
+}
+
+.names {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--gray-900);
+  letter-spacing: -1px;
+  line-height: 1.2;
+}
+.cardMidnight .names { color: #fff; }
+.cardNeon .names {
+  color: #fff;
+  text-shadow: 0 0 10px rgba(241, 7, 163, 0.6), 0 0 20px rgba(123, 47, 247, 0.4);
+}
+
+.message {
+  font-size: 16px;
+  color: var(--gray-700);
+  line-height: 1.65;
+  font-style: italic;
+  font-weight: 500;
+}
+.cardMidnight .message { color: var(--gray-300); }
+.cardNeon .message { color: rgba(255, 255, 255, 0.9); }
+
+/* Polaroid Frame */
+.polaroid {
+  background: #fff;
+  padding: 14px 14px 32px 14px;
+  border-radius: 6px;
+  box-shadow: var(--shadow-lg), 0 10px 30px rgba(0, 0, 0, 0.08);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transform: rotate(-1.5deg);
+  transition: transform 0.3s;
+  max-width: 260px;
+}
+.polaroid:hover {
+  transform: rotate(0deg) scale(1.03);
+}
+.polaroidImg {
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  border: 1px solid var(--gray-100);
+  border-radius: 2px;
+}
+.polaroidText {
+  font-size: 13px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-align: center;
+}
+
+/* Interaction controls */
+.interaction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 10px;
+}
+.btnAccept {
+  height: 52px;
+  padding: 0 40px;
+  border-radius: 100px;
+  border: none;
+  background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(255, 117, 140, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.btnAccept:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 14px 40px rgba(255, 117, 140, 0.55);
+}
+.btnAccept:active {
+  transform: scale(0.98);
+}
+
+.btnAcceptNeon {
+  background: linear-gradient(135deg, #f107a3 0%, #7b2ff7 100%) !important;
+  box-shadow: 0 10px 30px rgba(123, 47, 247, 0.4) !important;
+}
+.btnAcceptNeon:hover {
+  box-shadow: 0 14px 40px rgba(123, 47, 247, 0.6) !important;
+}
+
+.reactionMsg {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ff4d6d;
+  animation: pulseMessage 1s ease-in-out infinite alternate;
+}
+@keyframes pulseMessage {
+  from { transform: scale(0.96); opacity: 0.9; }
+  to { transform: scale(1.04); opacity: 1; }
+}
+
+.cardMidnight .reactionMsg {
+  color: #ff7eb3;
+}
+.cardNeon .reactionMsg {
+  color: #f107a3;
+  text-shadow: 0 0 8px rgba(241, 7, 163, 0.5);
+}
+
+.footerNote {
+  font-size: 12px;
+  color: var(--gray-500);
+  opacity: 0.8;
+}
+.cardMidnight .footerNote { color: var(--gray-400); }
+.cardNeon .footerNote { color: rgba(255, 255, 255, 0.6); }
+
+/* Audio reminder */
+.audioReminder {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+@media (prefers-color-scheme: dark) {
+  .audioReminder {
+    background: rgba(31, 41, 55, 0.7);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: var(--gray-300);
+  }
+}
+.audioIndicator {
+  width: 8px;
+  height: 8px;
+  background-color: var(--green-500);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--green-500);
+}
+.audioIndicatorPulse {
+  animation: audioPulse 1.5s infinite;
+}
+@keyframes audioPulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--green-500); }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+/* Standard spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3.5px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mobile responsive bottom offsets */
+@media (max-width: 480px) {
+  .card {
+    padding: 30px 20px;
+    border-radius: 24px;
+    gap: 20px;
+  }
+  .names {
+    font-size: 22px;
+  }
+  .message {
+    font-size: 14px;
+  }
+  .polaroid {
+    max-width: 220px;
+  }
+  .polaroidImg {
+    width: 180px;
+    height: 180px;
+  }
+}
