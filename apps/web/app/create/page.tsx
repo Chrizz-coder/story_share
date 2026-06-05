@@ -134,20 +134,41 @@ export default function CreateProposalPage() {
           <p className={styles.subtitle}>Share this link with your special someone.</p>
           
           <div className={styles.linkBox}>
-            <input type="text" readOnly value={generatedLink} className={styles.linkInput} />
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>Share with them</label>
+              <input type="text" readOnly value={generatedLink} className={styles.linkInput} />
+            </div>
             <button 
               className={styles.copyBtn}
               onClick={() => {
                 navigator.clipboard.writeText(generatedLink);
-                alert('Copied to clipboard!');
+                alert('Share link copied to clipboard!');
               }}
             >
-              Copy Link
+              Copy
+            </button>
+          </div>
+
+          <div className={styles.linkBox} style={{ marginTop: '16px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>Secret Status Link (Keep for yourself)</label>
+              <input type="text" readOnly value={`${generatedLink}/status`} className={styles.linkInput} />
+            </div>
+            <button 
+              className={styles.copyBtn}
+              style={{ background: '#4b5563' }}
+              onClick={() => {
+                navigator.clipboard.writeText(`${generatedLink}/status`);
+                alert('Status link copied to clipboard!');
+              }}
+            >
+              Copy
             </button>
           </div>
 
           <button 
             className={styles.previewBtn}
+            style={{ marginTop: '24px' }}
             onClick={() => window.open(generatedLink, '_blank')}
           >
             Preview Page
