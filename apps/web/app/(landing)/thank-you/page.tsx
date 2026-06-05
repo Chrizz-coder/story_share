@@ -1,10 +1,11 @@
 'use client';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 import styles from './thankyou.module.css';
 
-export default function ThankYouPage() {
+/* ── Inner component that reads search params ── */
+function ThankYouContent() {
   const params = useSearchParams();
   const orderId = params.get('orderId');
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -101,5 +102,18 @@ export default function ThankYouPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+/* ── Page export — wraps inner component in Suspense ── */
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea, #764ba2)' }}>
+        <div style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+      </div>
+    }>
+      <ThankYouContent />
+    </Suspense>
   );
 }
