@@ -19,7 +19,24 @@ async function main() {
   const app = express();
   const port = process.env.PORT || 4000;
 
-  app.use(cors<cors.CorsRequest>());
+  // Allow requests from the frontend (Vercel) and local dev
+  const allowedOrigins = [
+    process.env.FRONTEND_URL,       // e.g. https://your-app.vercel.app
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ].filter(Boolean) as string[];
+
+  app.use(
+    cors<cors.CorsRequest>({
+      origin: (origin, callback) => {
+        // Allow requests with no origin (curl, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error(`CORS: Origin ${origin} not allowed`));
+      },
+      credentials: true,
+    })
+  );
   app.use(express.json());
 
   // ── 3. Health check ──────────────────────────────────────────────────────
