@@ -177,7 +177,7 @@ export default function CreateProposalPage() {
       ) : (
         <div className={styles.card}>
           <div className={styles.header}>
-            <div className={styles.iconBox}><Sparkles color="#ff758c" /></div>
+            <div className={styles.iconBox}><Sparkles color="#667eea" /></div>
             <h1 className={styles.title}>Make them say YES!</h1>
             <p className={styles.subtitle}>Create a personalized page they literally can't say no to 💖</p>
           </div>
@@ -267,7 +267,7 @@ export default function CreateProposalPage() {
                               }}
                               checked={field.value === m.id}
                             />
-                            <Music size={16} color={field.value === m.id ? '#ff758c' : '#9ca3af'} />
+                            <Music size={16} color={field.value === m.id ? '#667eea' : '#9ca3af'} />
                             {m.label}
                           </label>
                         ))}

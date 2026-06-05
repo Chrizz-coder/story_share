@@ -3,8 +3,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
-  font-family: system-ui, -apple-system, sans-serif;
+  padding: 104px 24px 64px;
+  font-family: 'Inter', system-ui, sans-serif;
   transition: background 0.5s ease;
 }
 
@@ -31,7 +31,7 @@
 .iconBox {
   width: 56px;
   height: 56px;
-  background: #fff0f3;
+  background: #f3f4f6;
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -93,8 +93,8 @@
 }
 
 .inputGroup input[type="text"]:focus, .inputGroup textarea:focus {
-  border-color: #ff758c;
-  box-shadow: 0 0 0 4px rgba(255, 117, 140, 0.1);
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
 .inputError {
@@ -132,9 +132,9 @@
 }
 
 .optionCard.selected {
-  border-color: #ff758c;
-  background: #fff0f3;
-  color: #be123c;
+  border-color: #667eea;
+  background: #f5f3ff;
+  color: #4c1d95;
 }
 
 .optionCard input[type="radio"] {
@@ -152,14 +152,14 @@
 }
 
 .optionCard.selected .radioCustom {
-  border-color: #ff758c;
+  border-color: #667eea;
 }
 
 .optionCard.selected .radioCustom::after {
   content: '';
   width: 10px;
   height: 10px;
-  background: #ff758c;
+  background: #667eea;
   border-radius: 50%;
 }
 
@@ -185,8 +185,8 @@
 }
 
 .themeCard.selected {
-  border-color: #ff758c;
-  background: #fff0f3;
+  border-color: #667eea;
+  background: #f5f3ff;
 }
 
 .themeCard input[type="radio"] {
@@ -217,8 +217,8 @@
 }
 
 .photoUploadArea:hover {
-  border-color: #ff758c;
-  background: #fff0f3;
+  border-color: #667eea;
+  background: #f5f3ff;
 }
 
 .uploadPlaceholder {
@@ -257,7 +257,7 @@
 
 .primaryBtn {
   color: white;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
 
 .primaryBtn:hover {
@@ -290,6 +290,7 @@
   display: flex;
   gap: 8px;
   margin: 32px 0 24px;
+  text-align: left;
 }
 
 .linkInput {
@@ -308,6 +309,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s;
+  margin-top: 20px;
 }
 
 .copyBtn:hover {
@@ -316,7 +318,7 @@
 
 .previewBtn {
   width: 100%;
-  background: #ff758c;
+  background: #667eea;
   color: white;
 }
 

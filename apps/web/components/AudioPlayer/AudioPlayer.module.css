@@ -20,7 +20,7 @@
 }
 
 .playButton {
-  background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   width: 40px;
@@ -30,13 +30,13 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 117, 140, 0.4);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .playButton:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(255, 117, 140, 0.6);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
 }
 
 .playButton:active {
@@ -62,7 +62,7 @@
 }
 
 .volumeButton:hover {
-  color: #ff758c;
+  color: #667eea;
 }
 
 .volumeSlider {
@@ -80,7 +80,7 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #ff758c;
+  background: #667eea;
   cursor: pointer;
   transition: transform 0.2s ease;
 }
