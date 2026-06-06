@@ -56,7 +56,7 @@ export const typeDefs = gql`
     recipientName: String!
     senderName: String!
     template: String!
-    customMessage: String!
+    customMessage: String
     theme: String!
     music: String!
     photoData: String

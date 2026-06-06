@@ -27,6 +27,8 @@ export const GET_PROPOSAL = gql`
       theme
       music
       photoData
+      viewCount
+      accepted
       createdAt
     }
   }

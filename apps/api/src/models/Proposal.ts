@@ -4,7 +4,7 @@ export interface IProposal extends Document {
   recipientName: string;
   senderName: string;
   template: 'romantic' | 'marriage' | 'date' | 'birthday' | 'custom';
-  customMessage: string;
+  customMessage?: string;
   theme: string;
   music: string;
   photoData?: string;
@@ -23,7 +23,7 @@ const ProposalSchema: Schema = new Schema(
       enum: ['romantic', 'marriage', 'date', 'birthday', 'custom'],
       required: true,
     },
-    customMessage: { type: String, required: true },
+    customMessage: { type: String, default: '' },
     theme: { type: String, required: true },
     music: { type: String, required: true },
     photoData: { type: String }, // Optional Base64 or URL

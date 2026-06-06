@@ -1,59 +1,66 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import React, { useState, useRef } from 'react';
+import { useForm } from 'react-hook-form';
 import { useMutation } from '@apollo/client';
 import { CREATE_PROPOSAL } from '@/graphql/proposals';
 import { useAudio } from '@/context/AudioContext';
 import { DEFAULT_TRACKS } from '@/lib/tracks';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Heart,
-  Sparkles,
-  Gift,
-  Coffee,
-  Music,
-  Play,
-  Pause,
-  Upload,
-  Check,
-  Copy,
-  ArrowRight,
-  ArrowLeft,
-  X,
-  ExternalLink,
-} from 'lucide-react';
+import { Heart, Sparkles, Coffee, Gift, Upload, X, Copy, ExternalLink, Check, Music } from 'lucide-react';
 import styles from './create.module.css';
 
 interface ProposalForm {
   recipientName: string;
   senderName: string;
-  template: 'romantic' | 'marriage' | 'date' | 'birthday' | 'custom';
   customMessage: string;
-  theme: 'rose-glow' | 'sunset-gold' | 'midnight-stars' | 'neon-dream';
   music: string;
   photoData?: string;
 }
 
-const TEMPLATES = [
-  { key: 'romantic' as const, label: 'Romantic', icon: Heart, desc: 'A declaration of deep affection' },
-  { key: 'marriage' as const, label: 'Marriage', icon: Sparkles, desc: 'A grand proposal of partnership' },
-  { key: 'date' as const, label: 'Date Out', icon: Coffee, desc: 'An invitation to share a moment' },
-  { key: 'birthday' as const, label: 'Birthday', icon: Gift, desc: 'A special customized greeting' },
-  { key: 'custom' as const, label: 'Custom Card', icon: Music, desc: 'Create a unique message template' },
-];
+const PROPOSAL_TYPES = [
+  {
+    key: 'romantic',
+    label: 'Romantic Proposal',
+    emoji: '💕',
+    desc: 'Ask that special someone',
+    icon: Heart,
+    available: true,
+  },
+  {
+    key: 'marriage',
+    label: 'Marriage',
+    emoji: '💍',
+    desc: 'A lifetime commitment',
+    icon: Sparkles,
+    available: false,
+  },
+  {
+    key: 'date',
+    label: 'Date Invitation',
+    emoji: '☕',
+    desc: 'Share a moment together',
+    icon: Coffee,
+    available: false,
+  },
+  {
+    key: 'birthday',
+    label: 'Birthday',
+    emoji: '🎂',
+    desc: 'A special celebration',
+    icon: Gift,
+    available: false,
+  },
+] as const;
 
-const THEMES = [
-  { key: 'rose-glow' as const, label: 'Rose Glow', gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)', textColor: '#ffffff' },
-  { key: 'sunset-gold' as const, label: 'Sunset Gold', gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', textColor: '#ffffff' },
-  { key: 'midnight-stars' as const, label: 'Midnight Stars', gradient: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)', textColor: '#ffffff' },
-  { key: 'neon-dream' as const, label: 'Neon Dream', gradient: 'linear-gradient(135deg, #f107a3 0%, #7b2ff7 100%)', textColor: '#ffffff' },
-];
+const MUSIC_OPTIONS = DEFAULT_TRACKS.slice(0, 4);
 
 export default function ProposalCreator() {
-  const [step, setStep] = useState(1);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [shareLink, setShareLink] = useState('');
+  const [proposalId, setProposalId] = useState('');
   const [copied, setCopied] = useState(false);
+  const [selectedMusic, setSelectedMusic] = useState('romantic-lofi');
+  const [showComingSoon, setShowComingSoon] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { currentTrack, isPlaying, togglePlay, selectTrack } = useAudio();
@@ -62,58 +69,24 @@ export default function ProposalCreator() {
   const {
     register,
     handleSubmit,
-    control,
     setValue,
-    watch,
-    trigger,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<ProposalForm>({
     defaultValues: {
-      template: 'romantic',
-      theme: 'rose-glow',
       music: 'romantic-lofi',
       customMessage: '',
       recipientName: '',
       senderName: '',
     },
-    mode: 'onChange',
   });
 
-  const watchAll = watch();
-
-  // Validate step transitions
-  const handleNextStep = async () => {
-    let fieldsToValidate: ('senderName' | 'recipientName' | 'template' | 'theme' | 'customMessage' | 'music')[] = [];
-    if (step === 1) {
-      fieldsToValidate = ['senderName', 'recipientName'];
-    } else if (step === 2) {
-      fieldsToValidate = ['template', 'theme'];
-    } else if (step === 3) {
-      fieldsToValidate = ['customMessage'];
-    } else if (step === 4) {
-      fieldsToValidate = ['music'];
-    }
-
-    const isStepValid = await trigger(fieldsToValidate);
-    if (isStepValid) {
-      setStep((prev) => prev + 1);
-    }
-  };
-
-  const handlePrevStep = () => {
-    setStep((prev) => Math.max(1, prev - 1));
-  };
-
-  // Image Upload handlers
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (file.size > 2 * 1024 * 1024) {
       alert('Image size should be less than 2MB');
       return;
     }
-
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = reader.result as string;
@@ -127,13 +100,15 @@ export default function ProposalCreator() {
     e.stopPropagation();
     setPhotoPreview(null);
     setValue('photoData', undefined);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Music Selector handlers
-  const handlePlayMusic = (e: React.MouseEvent, trackId: string) => {
+  const handleMusicSelect = (trackId: string) => {
+    setSelectedMusic(trackId);
+    setValue('music', trackId);
+  };
+
+  const handleMusicPreview = (e: React.MouseEvent, trackId: string) => {
     e.stopPropagation();
     if (currentTrack.id === trackId) {
       togglePlay();
@@ -142,31 +117,31 @@ export default function ProposalCreator() {
     }
   };
 
-  const handleTrackSelect = (trackId: string) => {
-    setValue('music', trackId);
+  const handleComingSoonClick = (label: string) => {
+    setShowComingSoon(label);
+    setTimeout(() => setShowComingSoon(null), 2500);
   };
 
-  // Form Submit
   const onSubmit = async (data: ProposalForm) => {
     try {
-      const { data: responseData } = await createProposal({
+      const { data: res } = await createProposal({
         variables: {
           input: {
             recipientName: data.recipientName,
             senderName: data.senderName,
-            template: data.template,
-            customMessage: data.customMessage,
-            theme: data.theme,
-            music: data.music,
+            template: 'romantic',
+            customMessage: data.customMessage || '',
+            theme: 'rose-glow',
+            music: selectedMusic,
             photoData: data.photoData || null,
           },
         },
       });
-
-      if (responseData?.createProposal) {
-        const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-        setShareLink(`${origin}/proposal/${responseData.createProposal.id}`);
-        setStep(6);
+      if (res?.createProposal) {
+        const id = res.createProposal.id;
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        setProposalId(id);
+        setShareLink(`${origin}/p/${id}`);
       }
     } catch (err) {
       console.error('Failed to create proposal:', err);
@@ -176,392 +151,364 @@ export default function ProposalCreator() {
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareLink);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2500);
   };
 
-  // Progress Bar Width
-  const progressPercent = step === 6 ? 100 : ((step - 1) / 4) * 100;
+  const handleNativeShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'I have a special question for you 💕',
+        text: 'Someone has a romantic proposal for you!',
+        url: shareLink,
+      }).catch(() => {});
+    }
+  };
+
+  // Hearts for background
+  const bgHearts = Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    left: `${8 + i * 7.5}%`,
+    top: `${10 + ((i * 37) % 80)}%`,
+    size: 14 + (i % 4) * 6,
+    delay: i * 1.3,
+    duration: 12 + (i % 5) * 3,
+  }));
 
   return (
-    <div className={styles.container}>
-      {/* Background blobs */}
-      <div className={styles.blobs}>
-        {[...Array(5)].map((_, i) => (
+    <div className={styles.page}>
+      {/* Background hearts */}
+      <div className={styles.bgHearts} aria-hidden>
+        {bgHearts.map((h) => (
           <div
-            key={i}
-            className={`${styles.blob} animate-float`}
+            key={h.id}
+            className={styles.bgHeart}
             style={{
-              width: `${150 + i * 50}px`,
-              height: `${150 + i * 50}px`,
-              left: `${10 + i * 20}%`,
-              top: `${15 + (i % 2) * 35}%`,
-              animationDelay: `${i * 2}s`,
-            } as React.CSSProperties}
+              left: h.left,
+              top: h.top,
+              width: h.size,
+              height: h.size,
+              animationDelay: `${h.delay}s`,
+              animationDuration: `${h.duration}s`,
+            }}
           />
         ))}
       </div>
 
-      <div className={styles.wrapper}>
-        {step < 6 && (
-          <div className={styles.stepperHeader}>
-            <span className={styles.stepTitle}>Proposal Creator</span>
-            <span className={styles.stepProgress}>Step {step} of 5</span>
-          </div>
+      {/* Coming soon toast */}
+      <AnimatePresence>
+        {showComingSoon && (
+          <motion.div
+            className={styles.comingSoonToast}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            🚀 {showComingSoon} is coming soon!
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {step < 6 && (
-          <div className={styles.progressBarContainer}>
-            <div className={styles.progressBar} style={{ width: `${progressPercent}%` }} />
+      <div className={styles.container}>
+        {/* Header */}
+        <motion.div
+          className={styles.header}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className={styles.headerIcon}>
+            <Heart size={28} fill="currentColor" />
           </div>
-        )}
+          <h1 className={styles.headerTitle}>Create a Proposal</h1>
+          <p className={styles.headerSub}>Make someone&apos;s heart skip a beat 💕</p>
+        </motion.div>
 
-        <div className={styles.panel}>
-          <form onSubmit={handleSubmit(onSubmit)} noValidate>
-            <AnimatePresence mode="wait">
-              {/* STEP 1: Names */}
-              {step === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className={styles.stepContent}
-                >
-                  <h2 className={styles.heading}>Tell us who this is for</h2>
-                  <p className={styles.subheading}>Fill in the names to personalize the proposal invitation.</p>
+        <AnimatePresence mode="wait">
+          {!shareLink ? (
+            <motion.div
+              key="form"
+              className={styles.card}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -24, scale: 0.97 }}
+              transition={{ duration: 0.4 }}
+            >
+              {/* Type Selector */}
+              <div className={styles.typeSection}>
+                <p className={styles.sectionLabel}>Choose Type</p>
+                <div className={styles.typeGrid}>
+                  {PROPOSAL_TYPES.map((type) => {
+                    const Icon = type.icon;
+                    if (type.available) {
+                      return (
+                        <div key={type.key} className={`${styles.typeTile} ${styles.typeTileActive}`}>
+                          <span className={styles.typeEmoji}>{type.emoji}</span>
+                          <span className={styles.typeLabel}>{type.label}</span>
+                          <div className={styles.activePill}>Selected ✓</div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <button
+                        key={type.key}
+                        type="button"
+                        className={`${styles.typeTile} ${styles.typeTileDisabled}`}
+                        onClick={() => handleComingSoonClick(type.label)}
+                      >
+                        <span className={styles.typeEmoji}>{type.emoji}</span>
+                        <span className={styles.typeLabel}>{type.label}</span>
+                        <div className={styles.comingSoonPill}>Coming Soon</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
+              <div className={styles.divider} />
+
+              {/* Form */}
+              <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                {/* Names Row */}
+                <div className={styles.namesRow}>
                   <div className={styles.field}>
-                    <label htmlFor="senderName" className={styles.label}>Your Name (Sender)</label>
-                    <input
-                      id="senderName"
-                      type="text"
-                      className={styles.input}
-                      placeholder="e.g. John Doe"
-                      {...register('senderName', { required: 'Your name is required' })}
-                    />
-                    {errors.senderName && <span className={styles.errorText}>{errors.senderName.message}</span>}
-                  </div>
-
-                  <div className={styles.field}>
-                    <label htmlFor="recipientName" className={styles.label}>Special Someone's Name (Recipient)</label>
+                    <label className={styles.label} htmlFor="recipientName">
+                      Their Name <span className={styles.required}>*</span>
+                    </label>
                     <input
                       id="recipientName"
                       type="text"
-                      className={styles.input}
-                      placeholder="e.g. Jane Smith"
+                      className={`${styles.input} ${errors.recipientName ? styles.inputError : ''}`}
+                      placeholder="e.g. Sarah"
                       {...register('recipientName', { required: 'Recipient name is required' })}
                     />
-                    {errors.recipientName && <span className={styles.errorText}>{errors.recipientName.message}</span>}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* STEP 2: Templates & Themes */}
-              {step === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className={styles.stepContent}
-                >
-                  <h2 className={styles.heading}>Choose Template & Theme</h2>
-                  <p className={styles.subheading}>Templates change the message layout, and themes set the visual style.</p>
-
-                  <div className={styles.field}>
-                    <label className={styles.label}>Select Card Template</label>
-                    <div className={styles.optionsGrid}>
-                      {TEMPLATES.map((tmpl) => {
-                        const Icon = tmpl.icon;
-                        const isActive = watchAll.template === tmpl.key;
-                        return (
-                          <div
-                            key={tmpl.key}
-                            className={`${styles.optionCard} ${isActive ? styles.activeCard : ''}`}
-                            onClick={() => setValue('template', tmpl.key)}
-                          >
-                            <div className={styles.optionIcon}>
-                              <Icon size={20} />
-                            </div>
-                            <div>
-                              <span className={styles.optionLabel}>{tmpl.label}</span>
-                              <p className={styles.optionDesc}>{tmpl.desc}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    {errors.recipientName && (
+                      <span className={styles.errorText}>{errors.recipientName.message}</span>
+                    )}
                   </div>
 
                   <div className={styles.field}>
-                    <label className={styles.label}>Select Custom Theme</label>
-                    <div className={styles.optionsGrid}>
-                      {THEMES.map((theme) => {
-                        const isActive = watchAll.theme === theme.key;
-                        return (
-                          <div
-                            key={theme.key}
-                            className={`${styles.themeCard} ${isActive ? styles.activeCard : ''}`}
-                            onClick={() => setValue('theme', theme.key)}
-                          >
-                            <div className={styles.themeThumb} style={{ background: theme.gradient }}>
-                              <div className={styles.themeGlow} style={{ background: theme.gradient }} />
-                            </div>
-                            <span className={styles.themeTitle}>{theme.label}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* STEP 3: Message & Picture */}
-              {step === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className={styles.stepContent}
-                >
-                  <h2 className={styles.heading}>Write a Custom Message</h2>
-                  <p className={styles.subheading}>Express your feelings. You can also upload a memorable photo.</p>
-
-                  <div className={styles.field}>
-                    <label htmlFor="customMessage" className={styles.label}>Your Special Message</label>
-                    <textarea
-                      id="customMessage"
-                      className={styles.textarea}
-                      placeholder="Write your heart out here... e.g. From the moment I met you, my life became brighter..."
-                      {...register('customMessage', {
-                        required: 'Please write a message',
-                        minLength: { value: 10, message: 'Message should be at least 10 characters' },
-                      })}
+                    <label className={styles.label} htmlFor="senderName">
+                      Your Name <span className={styles.required}>*</span>
+                    </label>
+                    <input
+                      id="senderName"
+                      type="text"
+                      className={`${styles.input} ${errors.senderName ? styles.inputError : ''}`}
+                      placeholder="e.g. Alex"
+                      {...register('senderName', { required: 'Your name is required' })}
                     />
-                    {errors.customMessage && <span className={styles.errorText}>{errors.customMessage.message}</span>}
+                    {errors.senderName && (
+                      <span className={styles.errorText}>{errors.senderName.message}</span>
+                    )}
                   </div>
+                </div>
 
-                  <div className={styles.field}>
-                    <label className={styles.label}>Add a Polaroid Photo (Optional)</label>
-                    <div className={styles.uploadContainer} onClick={() => fileInputRef.current?.click()}>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        accept="image/*"
-                        className={styles.uploadInput}
-                        onChange={handlePhotoUpload}
-                      />
-                      {photoPreview ? (
-                        <div className={styles.polaroid} onClick={(e) => e.stopPropagation()}>
-                          <button className={styles.removeImgBtn} onClick={removePhoto} aria-label="Remove Image">
-                            <X size={12} />
-                          </button>
-                          <img src={photoPreview} alt="Upload Preview" className={styles.polaroidImg} />
-                          <span className={styles.polaroidText}>Our Moment ✦</span>
-                        </div>
-                      ) : (
-                        <div className={styles.uploadContent}>
-                          <Upload size={32} />
-                          <span className={styles.uploadTitle}>Click to upload an image</span>
-                          <span className={styles.uploadSub}>Supports JPG, PNG (Max 2MB)</span>
-                        </div>
-                      )}
-                    </div>
+                <div className={styles.divider} />
+
+                {/* Personal Message */}
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="customMessage">
+                    Personal Message{' '}
+                    <span className={styles.optional}>(shown after they say Yes)</span>
+                  </label>
+                  <textarea
+                    id="customMessage"
+                    className={styles.textarea}
+                    placeholder="e.g. You're the most amazing person I know. I love you endlessly. 🌹"
+                    rows={3}
+                    {...register('customMessage')}
+                  />
+                </div>
+
+                {/* Photo Upload */}
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    Photo{' '}
+                    <span className={styles.optional}>(optional — shown after Yes)</span>
+                  </label>
+                  <div
+                    className={`${styles.uploadZone} ${photoPreview ? styles.uploadZoneHasPhoto : ''}`}
+                    onClick={() => !photoPreview && fileInputRef.current?.click()}
+                    role={photoPreview ? undefined : 'button'}
+                    tabIndex={photoPreview ? undefined : 0}
+                    onKeyDown={(e) => e.key === 'Enter' && !photoPreview && fileInputRef.current?.click()}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      className={styles.fileInput}
+                      onChange={handlePhotoUpload}
+                    />
+                    {photoPreview ? (
+                      <div className={styles.photoPreview} onClick={(e) => e.stopPropagation()}>
+                        <img src={photoPreview} alt="Preview" className={styles.previewImg} />
+                        <button
+                          type="button"
+                          className={styles.removePhotoBtn}
+                          onClick={removePhoto}
+                          aria-label="Remove photo"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className={styles.uploadPrompt}>
+                        <Upload size={22} className={styles.uploadIcon} />
+                        <span className={styles.uploadTitle}>Upload a photo</span>
+                        <span className={styles.uploadSub}>JPG, PNG — max 2MB</span>
+                      </div>
+                    )}
                   </div>
-                </motion.div>
-              )}
+                </div>
 
-              {/* STEP 4: Soundtrack */}
-              {step === 4 && (
-                <motion.div
-                  key="step4"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className={styles.stepContent}
-                >
-                  <h2 className={styles.heading}>Select Background Music</h2>
-                  <p className={styles.subheading}>Choose the soundtrack that will play automatically when they open the link.</p>
+                <div className={styles.divider} />
 
+                {/* Music Selector */}
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <Music size={14} style={{ display: 'inline', marginRight: 6 }} />
+                    Background Music
+                  </label>
                   <div className={styles.musicGrid}>
-                    {DEFAULT_TRACKS.map((track) => {
-                      const isSelected = watchAll.music === track.id;
-                      const isTrackPlaying = isPlaying && currentTrack.id === track.id;
-
+                    {MUSIC_OPTIONS.map((track) => {
+                      const isSelected = selectedMusic === track.id;
+                      const isPreviewing = isPlaying && currentTrack.id === track.id;
                       return (
                         <div
                           key={track.id}
-                          className={`${styles.musicTrack} ${isSelected ? styles.activeMusic : ''}`}
-                          onClick={() => handleTrackSelect(track.id)}
+                          className={`${styles.musicTile} ${isSelected ? styles.musicTileActive : ''}`}
+                          onClick={() => handleMusicSelect(track.id)}
+                          role="radio"
+                          aria-checked={isSelected}
+                          tabIndex={0}
+                          onKeyDown={(e) => e.key === 'Enter' && handleMusicSelect(track.id)}
                         >
-                          <div className={styles.musicLeft}>
-                            <button
-                              type="button"
-                              className={styles.musicPlayBtn}
-                              onClick={(e) => handlePlayMusic(e, track.id)}
-                              aria-label={isTrackPlaying ? 'Pause preview' : 'Play preview'}
-                            >
-                              {isTrackPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '1px' }} />}
-                            </button>
-                            <div className={styles.musicMeta}>
-                              <span className={styles.musicTitle}>{track.name}</span>
-                              <span className={styles.musicArtist}>{track.artist}</span>
-                              <span className={styles.musicTag}>{track.category}</span>
-                            </div>
+                          <button
+                            type="button"
+                            className={`${styles.previewBtn} ${isPreviewing ? styles.previewBtnPlaying : ''}`}
+                            onClick={(e) => handleMusicPreview(e, track.id)}
+                            aria-label={isPreviewing ? 'Pause preview' : 'Play preview'}
+                          >
+                            {isPreviewing ? '⏸' : '▶'}
+                          </button>
+                          <div className={styles.musicInfo}>
+                            <span className={styles.musicName}>{track.category}</span>
+                            <span className={styles.musicSub}>{track.name}</span>
                           </div>
-                          {isSelected && <Check size={18} className={styles.playingIndicator} />}
+                          {isSelected && <Check size={16} className={styles.checkMark} />}
                         </div>
                       );
                     })}
                   </div>
-                </motion.div>
-              )}
+                </div>
 
-              {/* STEP 5: Review & Publish */}
-              {step === 5 && (
-                <motion.div
-                  key="step5"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className={styles.stepContent}
+                {/* Error */}
+                {error && (
+                  <p className={styles.submitError}>
+                    ⚠ Failed to create proposal — {error.message}
+                  </p>
+                )}
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={loading}
+                  id="generate-proposal-btn"
                 >
-                  <h2 className={styles.heading}>Review & Generate</h2>
-                  <p className={styles.subheading}>Double-check how your proposal card will look before publishing.</p>
-
-                  <div className={styles.previewBox}>
-                    <div
-                      className={styles.previewCard}
-                      style={{
-                        background: THEMES.find((t) => t.key === watchAll.theme)?.gradient || '#333',
-                      }}
-                    >
-                      <span className={styles.previewBadge}>
-                        {TEMPLATES.find((t) => t.key === watchAll.template)?.label} Template
-                      </span>
-                      <div className={styles.previewNames}>
-                        {watchAll.senderName || 'Sender'} ✦ {watchAll.recipientName || 'Recipient'}
-                      </div>
-                      <p className={styles.previewMessage}>
-                        "{watchAll.customMessage || 'Write your beautiful custom message in the previous step...'}"
-                      </p>
-                      {photoPreview && (
-                        <div className={styles.polaroid} style={{ transform: 'none', scale: 0.85 }}>
-                          <img src={photoPreview} alt="Polaroid Preview" className={styles.polaroidImg} />
-                          <span className={styles.polaroidText}>Our Moment ✦</span>
-                        </div>
-                      )}
-                      <div style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.85 }}>
-                        <Music size={12} />
-                        Soundtrack: {DEFAULT_TRACKS.find((t) => t.id === watchAll.music)?.name}
-                      </div>
-                    </div>
-                  </div>
-
-                  {error && (
-                    <div style={{ color: 'var(--red-500)', fontSize: '13px', fontWeight: 500, textAlign: 'center' }}>
-                      ⚠ Failed to publish: {error.message}
-                    </div>
+                  {loading ? (
+                    <span className={styles.spinner} />
+                  ) : (
+                    <>
+                      <Sparkles size={18} />
+                      Generate My Proposal
+                    </>
                   )}
-                </motion.div>
-              )}
-
-              {/* STEP 6: Success published */}
-              {step === 6 && (
-                <motion.div
-                  key="step6"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className={styles.successWrapper}
-                >
-                  {copied && <div className={styles.toast}>Copied to Clipboard!</div>}
-
-                  <div className={styles.successRing}>
-                    <Check size={36} strokeWidth={2.5} />
-                  </div>
-
-                  <div>
-                    <h2 className={styles.heading}>Your Proposal is Live!</h2>
-                    <p className={styles.subheading} style={{ marginTop: '6px' }}>
-                      Copy the unique link below and share it with your special someone.
-                    </p>
-                  </div>
-
-                  <div className={styles.linkBox}>
-                    <input
-                      type="text"
-                      readOnly
-                      value={shareLink}
-                      className={styles.linkInput}
-                      onClick={(e) => (e.target as HTMLInputElement).select()}
-                    />
-                    <button type="button" className={styles.btnCopy} onClick={handleCopyLink}>
-                      <Copy size={14} />
-                      Copy
-                    </button>
-                  </div>
-
-                  <div className={styles.successActions}>
-                    <a
-                      href={`/proposal/${shareLink.split('/').pop()}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.btnPrimary}
-                    >
-                      View Proposal <ExternalLink size={14} style={{ marginLeft: '6px' }} />
-                    </a>
-                    <a href="/" className={styles.btnSecondary}>
-                      Back Home
-                    </a>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Stepper Navigation Buttons */}
-            {step < 6 && (
-              <div className={styles.actionsRow}>
-                {step > 1 ? (
-                  <button type="button" className={styles.btnBack} onClick={handlePrevStep}>
-                    <ArrowLeft size={16} style={{ marginRight: '6px', display: 'inline-block', verticalAlign: 'middle' }} />
-                    Back
-                  </button>
-                ) : (
-                  <div />
-                )}
-
-                {step < 5 ? (
-                  <button type="button" className={styles.btnNext} onClick={handleNextStep}>
-                    Next
-                    <ArrowRight size={16} />
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className={`${styles.btnNext} ${styles.btnFull}`}
-                    disabled={loading || !isValid}
-                  >
-                    {loading ? (
-                      <span className={styles.spinner} />
-                    ) : (
-                      <>
-                        Publish Proposal
-                        <Sparkles size={16} />
-                      </>
-                    )}
-                  </button>
-                )}
+                </button>
+              </form>
+            </motion.div>
+          ) : (
+            /* ─── Share Panel ─── */
+            <motion.div
+              key="share"
+              className={styles.shareCard}
+              initial={{ opacity: 0, scale: 0.93, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.5, type: 'spring', bounce: 0.3 }}
+            >
+              <div className={styles.shareSuccess}>
+                <div className={styles.successRing}>
+                  <Check size={32} strokeWidth={2.5} />
+                </div>
+                <h2 className={styles.shareTitle}>Your Proposal is Ready! 🎉</h2>
+                <p className={styles.shareSub}>
+                  Share this link with your special someone
+                </p>
               </div>
-            )}
-          </form>
-        </div>
+
+              <div className={styles.linkRow}>
+                <input
+                  type="text"
+                  readOnly
+                  value={shareLink}
+                  className={styles.linkInput}
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                  aria-label="Share link"
+                />
+                <button
+                  type="button"
+                  className={`${styles.copyBtn} ${copied ? styles.copyBtnCopied : ''}`}
+                  onClick={handleCopyLink}
+                  id="copy-share-link-btn"
+                >
+                  {copied ? <Check size={15} /> : <Copy size={15} />}
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+
+              <div className={styles.shareActions}>
+                {typeof navigator !== 'undefined' && 'share' in navigator && (
+                  <button
+                    type="button"
+                    className={styles.shareBtn}
+                    onClick={handleNativeShare}
+                    id="native-share-btn"
+                  >
+                    📱 Share
+                  </button>
+                )}
+                <a
+                  href={`/p/${proposalId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.previewLink}
+                  id="preview-proposal-link"
+                >
+                  <ExternalLink size={15} />
+                  Preview
+                </a>
+              </div>
+
+              <div className={styles.statsRow}>
+                <span className={styles.statBadge}>👁 0 views</span>
+                <span className={styles.statBadge}>💭 Not yet accepted</span>
+              </div>
+
+              <button
+                type="button"
+                className={styles.anotherBtn}
+                onClick={() => {
+                  setShareLink('');
+                  setProposalId('');
+                  setCopied(false);
+                }}
+              >
+                Create another proposal
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
