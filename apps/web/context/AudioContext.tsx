@@ -20,7 +20,9 @@ interface AudioContextType {
   nextTrack: () => void;
   prevTrack: () => void;
   seek: (time: number) => void;
-  playTrack: (url: string) => void; // backwards compatibility
+  playTrack: (url: string, options?: { volume?: number; loop?: boolean }) => void;
+  autoplayFailed: boolean;
+  setAutoplayFailed: (val: boolean) => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -32,6 +34,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [volume, setVolumeState] = useState(0.5);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [autoplayFailed, setAutoplayFailed] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -103,10 +106,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const play = () => {
     if (!audioRef.current) return;
     audioRef.current.play()
-      .then(() => setIsPlaying(true))
+      .then(() => {
+        setIsPlaying(true);
+        setAutoplayFailed(false);
+      })
       .catch((err) => {
         console.warn('Playback blocked or failed:', err);
         setIsPlaying(false);
+        setAutoplayFailed(true);
       });
   };
 
@@ -150,8 +157,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setTimeout(() => {
         if (audioRef.current) {
           audioRef.current.play()
-            .then(() => setIsPlaying(true))
-            .catch(console.error);
+            .then(() => {
+              setIsPlaying(true);
+              setAutoplayFailed(false);
+            })
+            .catch((err) => {
+              console.error(err);
+              setAutoplayFailed(true);
+            });
         }
       }, 50);
     }
@@ -175,14 +188,31 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentTime(time);
   };
 
-  // Backwards compatibility handler
-  const playTrack = (url: string) => {
+  // Extended backwards compatibility handler
+  const playTrack = (url: string, options?: { volume?: number; loop?: boolean }) => {
+    if (!audioRef.current) return;
+    
+    // Apply options first
+    if (options?.volume !== undefined) {
+      setVolumeState(options.volume);
+      audioRef.current.volume = options.volume;
+    }
+    if (options?.loop !== undefined) {
+      audioRef.current.loop = options.loop;
+    }
+
     const track = DEFAULT_TRACKS.find((t) => t.url === url || t.id === url);
     if (track) {
-      selectTrack(track.id);
-    } else if (audioRef.current) {
+      selectTrack(track.id); // selectTrack has an auto-play timer, but we also want to catch failure there if needed
+    } else {
       audioRef.current.src = url;
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+        setAutoplayFailed(false);
+      }).catch((err) => {
+        console.warn('PlayTrack blocked:', err);
+        setAutoplayFailed(true);
+      });
     }
   };
 
@@ -206,6 +236,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         prevTrack,
         seek,
         playTrack,
+        autoplayFailed,
+        setAutoplayFailed,
       }}
     >
       {children}

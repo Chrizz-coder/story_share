@@ -121,23 +121,25 @@ export default function ProposalCreator() {
     }
   };
 
-  const handleNativeShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'I have a special question for you 💕',
-        text: 'Someone has a romantic proposal for you!',
-        url: shareUrl,
-      }).catch(() => {});
+  const [showToast, setShowToast] = useState(false);
+
+  const handleShare = async () => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'I have a special question for you 💕',
+          text: 'Someone has a romantic proposal for you!',
+          url: shareUrl,
+        });
+      } catch (e) {
+        // user aborted or failed
+      }
+    } else {
+      // Fallback to clipboard
+      await navigator.clipboard.writeText(shareUrl);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     }
-  };
-
-  const handleWhatsApp = () => {
-    const text = encodeURIComponent(`💕 I have something special to ask you… ${shareUrl}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank');
-  };
-
-  const handleCopyLink = async () => {
-    await navigator.clipboard.writeText(shareUrl);
   };
 
   // ── Background hearts ────────────────────────────────────────────────
@@ -173,7 +175,7 @@ export default function ProposalCreator() {
         ))}
       </div>
 
-      {/* Coming soon toast */}
+      {/* Coming soon & Copied toast */}
       <AnimatePresence>
         {showComingSoon && (
           <motion.div
@@ -183,6 +185,16 @@ export default function ProposalCreator() {
             exit={{ opacity: 0, y: -20 }}
           >
             🚀 {showComingSoon} is coming soon!
+          </motion.div>
+        )}
+        {showToast && (
+          <motion.div
+            className={styles.comingSoonToast}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            Link copied successfully ❤️
           </motion.div>
         )}
       </AnimatePresence>
@@ -413,29 +425,11 @@ export default function ProposalCreator() {
                   <div className={styles.shareActions}>
                     <button
                       type="button"
-                      className={styles.waBtn}
-                      onClick={handleWhatsApp}
-                      id="whatsapp-share-btn"
+                      className={styles.shareBtn}
+                      onClick={handleShare}
+                      id="universal-share-btn"
                     >
-                      <span>💬</span> WhatsApp
-                    </button>
-                    {typeof navigator !== 'undefined' && 'share' in navigator && (
-                      <button
-                        type="button"
-                        className={styles.shareBtn}
-                        onClick={handleNativeShare}
-                        id="native-share-btn"
-                      >
-                        📱 Share
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className={styles.copyBtn}
-                      onClick={handleCopyLink}
-                      id="copy-share-link-btn"
-                    >
-                      <Check size={14} /> Copy Link
+                      📱 Share Proposal
                     </button>
                   </div>
                 </motion.div>

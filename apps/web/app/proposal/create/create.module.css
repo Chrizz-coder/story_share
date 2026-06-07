@@ -493,53 +493,6 @@
   text-align: center;
 }
 
-.copyBtn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 11px 16px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(255, 77, 121, 0.4);
-  background: rgba(255, 77, 121, 0.06);
-  color: #c2185b;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.copyBtn:hover {
-  background: rgba(255, 77, 121, 0.12);
-  border-color: #ff4d79;
-}
-
-.waBtn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 11px 16px;
-  border-radius: 12px;
-  border: none;
-  background: linear-gradient(135deg, #25d366, #128c7e);
-  color: #fff;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
-}
-
-.waBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45);
-}
-
 /* ── Share Actions ────────────────────────────────────────────────── */
 .shareActions {
   display: flex;
@@ -549,11 +502,16 @@
 
 .shareBtn {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 12px 20px;
   border-radius: 12px;
   border: 1.5px solid rgba(255, 77, 121, 0.4);
   background: rgba(255, 77, 121, 0.06);
   color: #c2185b;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -562,6 +520,7 @@
 
 .shareBtn:hover {
   background: rgba(255, 77, 121, 0.12);
+  transform: translateY(-1px);
 }
 
 .previewLink {

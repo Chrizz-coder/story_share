@@ -75,6 +75,7 @@
   height: 6px;
   background: #fff;
   border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 77, 121, 0.5);
   animation: twinkle ease-in-out infinite;
   animation-duration: 3s;
 }
@@ -377,6 +378,75 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
+/* ── Fallback & Share Tools ───────────────────────────────────────── */
+.playMusicFallback {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  padding: 12px 24px;
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.playMusicFallback:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.shareToast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  color: #c2185b;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 30px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.floatingShareBtn {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50px;
+  padding: 14px 28px;
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.floatingShareBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
 /* ── Mobile ───────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .btnsRow {
@@ -393,5 +463,18 @@
 
   .messageCard {
     padding: 18px 20px;
+  }
+
+  .playMusicFallback {
+    bottom: 16px;
+    left: 16px;
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .floatingShareBtn {
+    bottom: 20px;
+    padding: 12px 24px;
+    font-size: 14px;
   }
 }

@@ -92,10 +92,31 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
   // No-button spring position
   const noX = useMotionValue(0);
   const noY = useMotionValue(0);
-  const noXSpring = useSpring(noX, { stiffness: 300, damping: 18 });
-  const noYSpring = useSpring(noY, { stiffness: 300, damping: 18 });
+  const noXSpring = useSpring(noX, { stiffness: 300, damping: 20 });
+  const noYSpring = useSpring(noY, { stiffness: 300, damping: 20 });
 
-  const { playTrack } = useAudio();
+  const { playTrack, play, setVolume, autoplayFailed, setAutoplayFailed } = useAudio();
+
+  const [showToast, setShowToast] = useState(false);
+  
+  const handleShare = async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'I have a special question for you 💕',
+          text: 'Someone has a romantic proposal for you!',
+          url,
+        });
+      } catch (e) {
+        // user aborted or failed
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
 
   const { data, loading, error } = useQuery(GET_PROPOSAL, { variables: { id } });
   const [incrementViewCount] = useMutation(INCREMENT_VIEW);
@@ -118,7 +139,7 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
     if (!musicStarted) {
       const musicCategory = proposal.music ?? 'romantic';
       const musicUrl = getCategoryMusicUrl(musicCategory);
-      playTrack(musicUrl);
+      playTrack(musicUrl, { volume: 0.4, loop: true });
       setMusicStarted(true);
     }
   }, [proposal]);
@@ -157,37 +178,44 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
 
   // No-button escape mechanic
   const moveNoBtn = useCallback(() => {
-    if (!containerRef.current || !yesBtnRef.current) return;
-    const cr = containerRef.current.getBoundingClientRect();
+    if (!yesBtnRef.current) return;
     const yr = yesBtnRef.current.getBoundingClientRect();
+    
+    // Using viewport coordinates to ensure it never leaves screen
+    const ww = window.innerWidth;
+    const wh = window.innerHeight;
+    
     const noW = 160;
     const noH = 52;
     const margin = 20;
 
-    // Find safe zones that don't overlap Yes button (relative to container)
-    const yesLeft = yr.left - cr.left;
-    const yesTop = yr.top - cr.top;
-    const yesRight = yesLeft + yr.width;
-    const yesBottom = yesTop + yr.height;
+    // Yes button safe zone (viewport coordinates)
+    const safePadding = 30;
+    const yesLeft = yr.left - safePadding;
+    const yesRight = yr.right + safePadding;
+    const yesTop = yr.top - safePadding;
+    const yesBottom = yr.bottom + safePadding;
 
     let attempts = 0;
     let nx: number, ny: number;
     do {
-      nx = margin + Math.random() * (cr.width - noW - margin * 2);
-      ny = margin + Math.random() * (cr.height - noH - margin * 2);
+      // Random position inside viewport
+      nx = margin + Math.random() * (ww - noW - margin * 2);
+      ny = margin + Math.random() * (wh - noH - margin * 2);
       attempts++;
     } while (
-      attempts < 20 &&
-      nx < yesRight + 20 &&
-      nx + noW > yesLeft - 20 &&
-      ny < yesBottom + 20 &&
-      ny + noH > yesTop - 20
+      attempts < 50 &&
+      (nx < yesRight && nx + noW > yesLeft && ny < yesBottom && ny + noH > yesTop)
     );
 
-    // Convert to offset from current centre (0,0 = natural flow position)
-    // The No button sits in absolute positioned container
-    noX.set(nx - cr.width / 2 + noW / 2);
-    noY.set(ny);
+    // Convert the viewport coordinate to a relative offset for Framer Motion.
+    // Framer Motion x/y are relative to the element's original position.
+    // We get the current viewport center (since it was originally placed near center).
+    const cx = ww / 2 - noW / 2;
+    const cy = yr.top; // Originally placed near Yes button height
+    
+    noX.set(nx - cx);
+    noY.set(ny - cy);
   }, [noX, noY]);
 
   const handleNoHover = () => {
@@ -213,6 +241,7 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
     } catch {}
 
     setStage('ACCEPTED');
+    setVolume(0.55); // increase volume for happy moment
 
     // Confetti burst
     const fire = (angle: number, origin: { x: number; y: number }) => {
@@ -278,6 +307,39 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
     <div className={styles.page} ref={containerRef}>
       {/* ── Home Button ── */}
       <HomeButton />
+
+      {/* ── Play Music Fallback Button ── */}
+      <AnimatePresence>
+        {autoplayFailed && (
+          <motion.button
+            className={styles.playMusicFallback}
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            onClick={() => {
+              play();
+              setAutoplayFailed(false);
+            }}
+            aria-label="Play Music"
+          >
+            🎵 Play Music
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* ── Share Success Toast ── */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            className={styles.shareToast}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            Link copied successfully ❤️
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Floating Hearts (always visible once intro starts) ── */}
       <AnimatePresence>
@@ -432,6 +494,8 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
                   onClick={handleYesClick}
                   whileHover={{ scale: yesScale * 1.06 }}
                   whileTap={{ scale: yesScale * 0.95 }}
+                  animate={{ scale: [yesScale, yesScale * 1.05, yesScale] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
                 >
                   Yes! 💖
                 </motion.button>
@@ -526,6 +590,22 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
             </motion.div>
           )}
 
+        </AnimatePresence>
+
+        {/* ── Floating Share Button (visible during QUESTION, BUTTONS, ACCEPTED) ── */}
+        <AnimatePresence>
+          {(stage === 'QUESTION' || stage === 'BUTTONS' || stage === 'ACCEPTED') && (
+            <motion.button
+              className={styles.floatingShareBtn}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ delay: 0.5 }}
+              onClick={handleShare}
+            >
+              📱 Share Proposal
+            </motion.button>
+          )}
         </AnimatePresence>
       </div>
     </div>
