@@ -361,82 +361,6 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* ── Music Grid ───────────────────────────────────────────────────── */
-.musicGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.musicTile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(255, 182, 193, 0.5);
-  background: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  transition: all 0.2s;
-  outline: none;
-}
-
-.musicTile:hover {
-  border-color: #ff4d79;
-  background: rgba(255, 77, 121, 0.05);
-}
-
-.musicTileActive {
-  border-color: #ff4d79;
-  background: rgba(255, 77, 121, 0.08);
-}
-
-.previewBtn {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, #ff4d79, #ff80ab);
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  flex-shrink: 0;
-  transition: transform 0.15s;
-  box-shadow: 0 2px 8px rgba(255, 77, 121, 0.3);
-}
-
-.previewBtn:hover { transform: scale(1.1); }
-
-.previewBtnPlaying {
-  background: linear-gradient(135deg, #e91e63, #c2185b);
-}
-
-.musicInfo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.musicName {
-  font-size: 13px;
-  font-weight: 600;
-  color: #880e4f;
-}
-
-.musicSub {
-  font-size: 11px;
-  color: #e91e63;
-  opacity: 0.65;
-}
-
-.checkMark {
-  color: #ff4d79;
-  flex-shrink: 0;
-}
 
 /* ── Submit Button ────────────────────────────────────────────────── */
 .submitBtn {
@@ -550,52 +474,70 @@
   margin: 0;
 }
 
-/* ── Link Row ─────────────────────────────────────────────────────── */
-.linkRow {
+/* ── Unlocked Share ───────────────────────────────────────────────── */
+.unlockedShare {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(255, 77, 121, 0.05);
+  border: 1.5px solid rgba(255, 77, 121, 0.25);
 }
 
-.linkInput {
-  flex: 1;
-  font-family: 'Inter', system-ui, sans-serif;
+.unlockedLabel {
   font-size: 13px;
-  color: #880e4f;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1.5px solid rgba(255, 182, 193, 0.6);
-  border-radius: 12px;
-  padding: 11px 14px;
-  outline: none;
-  cursor: text;
-  min-width: 0;
+  font-weight: 700;
+  color: #c2185b;
+  margin: 0;
+  text-align: center;
 }
 
 .copyBtn {
-  flex-shrink: 0;
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 11px 18px;
+  padding: 11px 16px;
   border-radius: 12px;
-  border: none;
-  background: linear-gradient(135deg, #ff4d79, #e91e63);
-  color: #fff;
+  border: 1.5px solid rgba(255, 77, 121, 0.4);
+  background: rgba(255, 77, 121, 0.06);
+  color: #c2185b;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(255, 77, 121, 0.35);
 }
 
 .copyBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(255, 77, 121, 0.45);
+  background: rgba(255, 77, 121, 0.12);
+  border-color: #ff4d79;
 }
 
-.copyBtnCopied {
-  background: linear-gradient(135deg, #4caf50, #388e3c);
-  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.35);
+.waBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+}
+
+.waBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45);
 }
 
 /* ── Share Actions ────────────────────────────────────────────────── */

@@ -5,6 +5,8 @@ import { useQuery, useMutation, gql } from '@apollo/client';
 import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useAudio } from '@/context/AudioContext';
+import { getCategoryMusicUrl } from '@/lib/proposalAudio';
+import HomeButton from '@/components/HomeButton';
 import styles from './proposal.module.css';
 
 const GET_PROPOSAL = gql`
@@ -93,7 +95,7 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
   const noXSpring = useSpring(noX, { stiffness: 300, damping: 18 });
   const noYSpring = useSpring(noY, { stiffness: 300, damping: 18 });
 
-  const { selectTrack, play } = useAudio();
+  const { playTrack } = useAudio();
 
   const { data, loading, error } = useQuery(GET_PROPOSAL, { variables: { id } });
   const [incrementViewCount] = useMutation(INCREMENT_VIEW);
@@ -109,21 +111,21 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
     // Increment view count (fire and forget)
     incrementViewCount({ variables: { id } }).catch(() => {});
 
-    // Kick off the intro sequence
+    // Kick off the intro sequence & start music based on category
     setStage('INTRO');
+
+    // Auto-play category music (no user choice required)
+    if (!musicStarted) {
+      const musicCategory = proposal.music ?? 'romantic';
+      const musicUrl = getCategoryMusicUrl(musicCategory);
+      playTrack(musicUrl);
+      setMusicStarted(true);
+    }
   }, [proposal]);
 
   // Stage advance timeline
   useEffect(() => {
     if (stage === 'INTRO') {
-      // Start music as soon as INTRO begins
-      if (!musicStarted && proposal?.music) {
-        selectTrack(proposal.music);
-        setTimeout(() => {
-          play();
-          setMusicStarted(true);
-        }, 200);
-      }
       const t = setTimeout(() => setStage('GREETING'), 1800);
       return () => clearTimeout(t);
     }
@@ -274,6 +276,9 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
 
   return (
     <div className={styles.page} ref={containerRef}>
+      {/* ── Home Button ── */}
+      <HomeButton />
+
       {/* ── Floating Hearts (always visible once intro starts) ── */}
       <AnimatePresence>
         {stage !== 'LOADING' && (

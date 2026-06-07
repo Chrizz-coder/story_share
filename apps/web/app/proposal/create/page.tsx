@@ -3,17 +3,19 @@ import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@apollo/client';
 import { CREATE_PROPOSAL } from '@/graphql/proposals';
-import { useAudio } from '@/context/AudioContext';
-import { DEFAULT_TRACKS } from '@/lib/tracks';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sparkles, Coffee, Gift, Upload, X, Copy, ExternalLink, Check, Music } from 'lucide-react';
+import {
+  Heart, Sparkles, Coffee, Gift,
+  Upload, X, ExternalLink, Check,
+} from 'lucide-react';
+import HomeButton from '@/components/HomeButton';
+import ShareLockCard from '@/components/ShareLockCard';
 import styles from './create.module.css';
 
 interface ProposalForm {
   recipientName: string;
   senderName: string;
   customMessage: string;
-  music: string;
   photoData?: string;
 }
 
@@ -22,48 +24,36 @@ const PROPOSAL_TYPES = [
     key: 'romantic',
     label: 'Romantic Proposal',
     emoji: '💕',
-    desc: 'Ask that special someone',
-    icon: Heart,
     available: true,
   },
   {
     key: 'marriage',
     label: 'Marriage',
     emoji: '💍',
-    desc: 'A lifetime commitment',
-    icon: Sparkles,
     available: false,
   },
   {
     key: 'date',
     label: 'Date Invitation',
     emoji: '☕',
-    desc: 'Share a moment together',
-    icon: Coffee,
     available: false,
   },
   {
     key: 'birthday',
     label: 'Birthday',
     emoji: '🎂',
-    desc: 'A special celebration',
-    icon: Gift,
     available: false,
   },
 ] as const;
 
-const MUSIC_OPTIONS = DEFAULT_TRACKS.slice(0, 4);
-
 export default function ProposalCreator() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [shareLink, setShareLink] = useState('');
   const [proposalId, setProposalId] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [selectedMusic, setSelectedMusic] = useState('romantic-lofi');
+  const [shareUrl, setShareUrl] = useState('');
+  const [shareUnlocked, setShareUnlocked] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { currentTrack, isPlaying, togglePlay, selectTrack } = useAudio();
   const [createProposal, { loading, error }] = useMutation(CREATE_PROPOSAL);
 
   const {
@@ -72,14 +62,10 @@ export default function ProposalCreator() {
     setValue,
     formState: { errors },
   } = useForm<ProposalForm>({
-    defaultValues: {
-      music: 'romantic-lofi',
-      customMessage: '',
-      recipientName: '',
-      senderName: '',
-    },
+    defaultValues: { customMessage: '', recipientName: '', senderName: '' },
   });
 
+  // ── Photo upload ─────────────────────────────────────────────────────
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -103,25 +89,12 @@ export default function ProposalCreator() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleMusicSelect = (trackId: string) => {
-    setSelectedMusic(trackId);
-    setValue('music', trackId);
-  };
-
-  const handleMusicPreview = (e: React.MouseEvent, trackId: string) => {
-    e.stopPropagation();
-    if (currentTrack.id === trackId) {
-      togglePlay();
-    } else {
-      selectTrack(trackId);
-    }
-  };
-
   const handleComingSoonClick = (label: string) => {
     setShowComingSoon(label);
     setTimeout(() => setShowComingSoon(null), 2500);
   };
 
+  // ── Form submit ──────────────────────────────────────────────────────
   const onSubmit = async (data: ProposalForm) => {
     try {
       const { data: res } = await createProposal({
@@ -132,7 +105,7 @@ export default function ProposalCreator() {
             template: 'romantic',
             customMessage: data.customMessage || '',
             theme: 'rose-glow',
-            music: selectedMusic,
+            music: 'romantic', // category key — viewer loads /music/romantic.mp3 automatically
             photoData: data.photoData || null,
           },
         },
@@ -141,17 +114,11 @@ export default function ProposalCreator() {
         const id = res.createProposal.id;
         const origin = typeof window !== 'undefined' ? window.location.origin : '';
         setProposalId(id);
-        setShareLink(`${origin}/p/${id}`);
+        setShareUrl(`${origin}/p/${id}`);
       }
     } catch (err) {
       console.error('Failed to create proposal:', err);
     }
-  };
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
   };
 
   const handleNativeShare = () => {
@@ -159,12 +126,21 @@ export default function ProposalCreator() {
       navigator.share({
         title: 'I have a special question for you 💕',
         text: 'Someone has a romantic proposal for you!',
-        url: shareLink,
+        url: shareUrl,
       }).catch(() => {});
     }
   };
 
-  // Hearts for background
+  const handleWhatsApp = () => {
+    const text = encodeURIComponent(`💕 I have something special to ask you… ${shareUrl}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(shareUrl);
+  };
+
+  // ── Background hearts ────────────────────────────────────────────────
   const bgHearts = Array.from({ length: 12 }, (_, i) => ({
     id: i,
     left: `${8 + i * 7.5}%`,
@@ -175,7 +151,10 @@ export default function ProposalCreator() {
   }));
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} light-bg`}>
+      {/* ── Fixed Home Button ── */}
+      <HomeButton />
+
       {/* Background hearts */}
       <div className={styles.bgHearts} aria-hidden>
         {bgHearts.map((h) => (
@@ -224,7 +203,8 @@ export default function ProposalCreator() {
         </motion.div>
 
         <AnimatePresence mode="wait">
-          {!shareLink ? (
+          {/* ── FORM ── */}
+          {!proposalId && (
             <motion.div
               key="form"
               className={styles.card}
@@ -238,7 +218,6 @@ export default function ProposalCreator() {
                 <p className={styles.sectionLabel}>Choose Type</p>
                 <div className={styles.typeGrid}>
                   {PROPOSAL_TYPES.map((type) => {
-                    const Icon = type.icon;
                     if (type.available) {
                       return (
                         <div key={type.key} className={`${styles.typeTile} ${styles.typeTileActive}`}>
@@ -268,7 +247,6 @@ export default function ProposalCreator() {
 
               {/* Form */}
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
-                {/* Names Row */}
                 <div className={styles.namesRow}>
                   <div className={styles.field}>
                     <label className={styles.label} htmlFor="recipientName">
@@ -305,7 +283,6 @@ export default function ProposalCreator() {
 
                 <div className={styles.divider} />
 
-                {/* Personal Message */}
                 <div className={styles.field}>
                   <label className={styles.label} htmlFor="customMessage">
                     Personal Message{' '}
@@ -320,7 +297,6 @@ export default function ProposalCreator() {
                   />
                 </div>
 
-                {/* Photo Upload */}
                 <div className={styles.field}>
                   <label className={styles.label}>
                     Photo{' '}
@@ -362,55 +338,12 @@ export default function ProposalCreator() {
                   </div>
                 </div>
 
-                <div className={styles.divider} />
-
-                {/* Music Selector */}
-                <div className={styles.field}>
-                  <label className={styles.label}>
-                    <Music size={14} style={{ display: 'inline', marginRight: 6 }} />
-                    Background Music
-                  </label>
-                  <div className={styles.musicGrid}>
-                    {MUSIC_OPTIONS.map((track) => {
-                      const isSelected = selectedMusic === track.id;
-                      const isPreviewing = isPlaying && currentTrack.id === track.id;
-                      return (
-                        <div
-                          key={track.id}
-                          className={`${styles.musicTile} ${isSelected ? styles.musicTileActive : ''}`}
-                          onClick={() => handleMusicSelect(track.id)}
-                          role="radio"
-                          aria-checked={isSelected}
-                          tabIndex={0}
-                          onKeyDown={(e) => e.key === 'Enter' && handleMusicSelect(track.id)}
-                        >
-                          <button
-                            type="button"
-                            className={`${styles.previewBtn} ${isPreviewing ? styles.previewBtnPlaying : ''}`}
-                            onClick={(e) => handleMusicPreview(e, track.id)}
-                            aria-label={isPreviewing ? 'Pause preview' : 'Play preview'}
-                          >
-                            {isPreviewing ? '⏸' : '▶'}
-                          </button>
-                          <div className={styles.musicInfo}>
-                            <span className={styles.musicName}>{track.category}</span>
-                            <span className={styles.musicSub}>{track.name}</span>
-                          </div>
-                          {isSelected && <Check size={16} className={styles.checkMark} />}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Error */}
                 {error && (
                   <p className={styles.submitError}>
                     ⚠ Failed to create proposal — {error.message}
                   </p>
                 )}
 
-                {/* Submit */}
                 <button
                   type="submit"
                   className={styles.submitBtn}
@@ -428,10 +361,12 @@ export default function ProposalCreator() {
                 </button>
               </form>
             </motion.div>
-          ) : (
-            /* ─── Share Panel ─── */
+          )}
+
+          {/* ── GENERATED PANEL ── */}
+          {proposalId && (
             <motion.div
-              key="share"
+              key="generated"
               className={styles.shareCard}
               initial={{ opacity: 0, scale: 0.93, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -443,65 +378,76 @@ export default function ProposalCreator() {
                 </div>
                 <h2 className={styles.shareTitle}>Your Proposal is Ready! 🎉</h2>
                 <p className={styles.shareSub}>
-                  Share this link with your special someone
+                  Preview it first, then unlock sharing to send to your special someone.
                 </p>
               </div>
 
-              <div className={styles.linkRow}>
-                <input
-                  type="text"
-                  readOnly
-                  value={shareLink}
-                  className={styles.linkInput}
-                  onClick={(e) => (e.target as HTMLInputElement).select()}
-                  aria-label="Share link"
+              {/* Preview button — always visible */}
+              <a
+                href={`/p/${proposalId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.previewLink}
+                id="preview-proposal-link"
+              >
+                <ExternalLink size={15} />
+                Preview Proposal
+              </a>
+
+              {/* Share Gate */}
+              {!shareUnlocked ? (
+                <ShareLockCard
+                  proposalId={proposalId}
+                  shareUrl={shareUrl}
+                  onUnlocked={() => setShareUnlocked(true)}
                 />
-                <button
-                  type="button"
-                  className={`${styles.copyBtn} ${copied ? styles.copyBtnCopied : ''}`}
-                  onClick={handleCopyLink}
-                  id="copy-share-link-btn"
+              ) : (
+                /* ── Share Actions (unlocked) ── */
+                <motion.div
+                  className={styles.unlockedShare}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', bounce: 0.3 }}
                 >
-                  {copied ? <Check size={15} /> : <Copy size={15} />}
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
-              </div>
-
-              <div className={styles.shareActions}>
-                {typeof navigator !== 'undefined' && 'share' in navigator && (
-                  <button
-                    type="button"
-                    className={styles.shareBtn}
-                    onClick={handleNativeShare}
-                    id="native-share-btn"
-                  >
-                    📱 Share
-                  </button>
-                )}
-                <a
-                  href={`/p/${proposalId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.previewLink}
-                  id="preview-proposal-link"
-                >
-                  <ExternalLink size={15} />
-                  Preview
-                </a>
-              </div>
-
-              <div className={styles.statsRow}>
-                <span className={styles.statBadge}>👁 0 views</span>
-                <span className={styles.statBadge}>💭 Not yet accepted</span>
-              </div>
+                  <p className={styles.unlockedLabel}>✅ Sharing unlocked! Send it now:</p>
+                  <div className={styles.shareActions}>
+                    <button
+                      type="button"
+                      className={styles.waBtn}
+                      onClick={handleWhatsApp}
+                      id="whatsapp-share-btn"
+                    >
+                      <span>💬</span> WhatsApp
+                    </button>
+                    {typeof navigator !== 'undefined' && 'share' in navigator && (
+                      <button
+                        type="button"
+                        className={styles.shareBtn}
+                        onClick={handleNativeShare}
+                        id="native-share-btn"
+                      >
+                        📱 Share
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={styles.copyBtn}
+                      onClick={handleCopyLink}
+                      id="copy-share-link-btn"
+                    >
+                      <Check size={14} /> Copy Link
+                    </button>
+                  </div>
+                </motion.div>
+              )}
 
               <button
                 type="button"
                 className={styles.anotherBtn}
                 onClick={() => {
-                  setShareLink('');
                   setProposalId('');
-                  setCopied(false);
+                  setShareUrl('');
+                  setShareUnlocked(false);
                 }}
               >
                 Create another proposal
