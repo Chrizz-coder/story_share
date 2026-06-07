@@ -32,9 +32,10 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
             <p className={styles.footerTagline}>Create your story, share your love.</p>
           </div>
           <div className={styles.footerLinks}>
-            <Link href="/privacy" className={styles.footerLink}>Privacy</Link>
-            <Link href="/terms" className={styles.footerLink}>Terms</Link>
-            <Link href="/contact" className={styles.footerLink}>Contact</Link>
+            <Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link>
+            <Link href="/terms" className={styles.footerLink}>Terms &amp; Conditions</Link>
+            <Link href="/refund-policy" className={styles.footerLink}>Refund Policy</Link>
+            <Link href="/contact" className={styles.footerLink}>Contact Us</Link>
           </div>
         </div>
         <div className={styles.footerBottom}>
