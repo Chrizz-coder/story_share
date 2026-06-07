@@ -1,27 +1,9 @@
 'use client';
-import { useRef, useState } from 'react';
 import Features from './sections/Features';
-import Pricing from './sections/Pricing';
 import Testimonials from './sections/Testimonials';
-import PaymentModal from '@/components/PaymentModal';
 import styles from './hero.module.css';
 
-type Plan = 'starter' | 'premium' | 'creator';
-
 export default function LandingPage() {
-  const pricingRef = useRef<HTMLDivElement>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Plan>('premium');
-
-  const scrollToPricing = () => {
-    pricingRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const openModal = (plan: Plan) => {
-    setSelectedPlan(plan);
-    setModalOpen(true);
-  };
-
   return (
     <>
       {/* ── Hero ── */}
@@ -40,24 +22,21 @@ export default function LandingPage() {
 
         <div className={styles.heroContent}>
           <div className={`${styles.badge} animate-fadeInUp`}>
-            ✦ Trusted by 50,000+ creators
+            ✦ Craft unforgettable proposals
           </div>
 
           <h1 className={`${styles.headline} animate-fadeInUp delay-200`}>
-            Create Your Story,<br />
-            <span className={styles.headlineAccent}>Share Your Love</span>
+            Propose with Your<br />
+            <span className={styles.headlineAccent}>Heart &amp; Creativity</span>
           </h1>
 
           <p className={`${styles.subheadline} animate-fadeInUp delay-400`}>
-            Join thousands sharing their most memorable moments with beautiful stories, real-time reactions, and premium features.
+            Create a beautiful, personalised proposal page — complete with music, photos, and heartfelt words — and share it as a link your person will never forget.
           </p>
 
           <div className={`${styles.ctaRow} animate-fadeInUp delay-600`}>
-            <button id="hero-cta" className={styles.ctaBtn} onClick={scrollToPricing}>
-              Get Started
-            </button>
-            <a href="/proposal/create" className={styles.ctaSecondary}>
-              Create a Proposal ✦
+            <a id="hero-cta" href="/proposal/create" className={styles.ctaBtn}>
+              ✨ Create a Proposal
             </a>
           </div>
 
@@ -71,8 +50,8 @@ export default function LandingPage() {
         {/* Floating stats bar */}
         <div className={`${styles.statsBar} animate-fadeInUp delay-800`}>
           {[
-            { label: 'Active users', value: '50K+' },
-            { label: 'Stories shared', value: '2M+' },
+            { label: 'Proposals created', value: '50K+' },
+            { label: 'Moments shared', value: '2M+' },
             { label: 'Countries', value: '120+' },
             { label: 'Uptime', value: '99.9%' },
           ].map((s) => (
@@ -89,20 +68,8 @@ export default function LandingPage() {
         <Features />
       </div>
 
-      {/* ── Pricing ── */}
-      <div id="pricing" ref={pricingRef}>
-        <Pricing onSelectPlan={openModal} />
-      </div>
-
       {/* ── Testimonials ── */}
       <Testimonials />
-
-      {/* ── Payment Modal ── */}
-      <PaymentModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        plan={selectedPlan}
-      />
     </>
   );
 }

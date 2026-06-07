@@ -14,7 +14,6 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
           </Link>
           <nav className={styles.nav}>
             <Link href="#features" className={styles.navLink}>Features</Link>
-            <Link href="#pricing" className={styles.navLink}>Pricing</Link>
             <Link href="/login" className={styles.signInBtn}>Sign In</Link>
           </nav>
         </div>

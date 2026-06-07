@@ -6,21 +6,21 @@ const features = [
   {
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
       </svg>
     ),
-    title: 'Instant Sharing',
-    desc: 'Share memories in seconds with anyone, anywhere. No delays, no friction — just seamless sharing.',
+    title: 'Heartfelt Proposals',
+    desc: 'Write your story, add photos, choose music — build a proposal page that perfectly captures your feelings.',
   },
   {
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
       </svg>
     ),
-    title: 'Real-time Reactions',
-    desc: 'See who loves your moment the instant it happens. Live reaction counts and emoji bursts in real time.',
+    title: 'Share Instantly',
+    desc: 'Get a beautiful shareable link in seconds. Send it over chat, display it on a screen, or reveal it in person.',
   },
   {
     icon: (
@@ -28,8 +28,8 @@ const features = [
         <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
       </svg>
     ),
-    title: 'Beautiful Stories',
-    desc: '24-hour disappearing content with stunning templates. Make every moment look like a masterpiece.',
+    title: 'Memorable Experiences',
+    desc: 'Stunning animated templates, romantic music, and personalised messages — every detail tailored to your love story.',
   },
 ];
 
@@ -56,8 +56,8 @@ export default function Features() {
     <section className={styles.section}>
       <div className={`${styles.header} reveal`} ref={(el) => { cardRefs.current[3] = el; }}>
         <span className={styles.sectionLabel}>Why StoryShare?</span>
-        <h2 className={styles.title}>Everything you need to<br /><span className="brand-text">share what matters</span></h2>
-        <p className={styles.subtitle}>Built for creators who want powerful tools without the complexity.</p>
+        <h2 className={styles.title}>Everything you need to<br /><span className="brand-text">make it unforgettable</span></h2>
+        <p className={styles.subtitle}>Craft a proposal experience they will remember for the rest of their life.</p>
       </div>
 
       <div className={styles.grid}>

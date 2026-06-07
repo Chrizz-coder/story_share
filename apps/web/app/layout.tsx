@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import ApolloWrapper from '@/components/ApolloWrapper';
 import { AudioProvider } from '@/context/AudioContext';
-import AudioPlayer from '@/components/AudioPlayer/AudioPlayer';
 
 export const metadata: Metadata = {
   title: 'StoryShare — Create & Share Your Moments',
@@ -23,7 +22,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ApolloWrapper>
           <AudioProvider>
             {children}
-            <AudioPlayer />
           </AudioProvider>
         </ApolloWrapper>
       </body>
