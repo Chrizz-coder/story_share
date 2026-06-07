@@ -21,8 +21,6 @@ interface AudioContextType {
   prevTrack: () => void;
   seek: (time: number) => void;
   playTrack: (url: string, options?: { volume?: number; loop?: boolean }) => void;
-  autoplayFailed: boolean;
-  setAutoplayFailed: (val: boolean) => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -34,7 +32,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [volume, setVolumeState] = useState(0.5);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [autoplayFailed, setAutoplayFailed] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -61,7 +58,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     audioRef.current.volume = savedVolume ? parseFloat(savedVolume) : 0.5;
     audioRef.current.muted = savedMuted === 'true';
 
-    // Event listeners
+    // Event listeners for debugging and state
     const onTimeUpdate = () => {
       if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
     };
@@ -70,12 +67,22 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (audioRef.current) setDuration(audioRef.current.duration);
     };
 
+    const onCanPlayThrough = () => {
+      console.log('🎵 Audio loaded successfully');
+    };
+
+    const onError = (e: Event) => {
+      console.error('🎵 Audio loading error:', e);
+    };
+
     const onEnded = () => {
       nextTrack();
     };
 
     audioRef.current.addEventListener('timeupdate', onTimeUpdate);
     audioRef.current.addEventListener('loadedmetadata', onLoadedMetadata);
+    audioRef.current.addEventListener('canplaythrough', onCanPlayThrough);
+    audioRef.current.addEventListener('error', onError);
     audioRef.current.addEventListener('ended', onEnded);
 
     return () => {
@@ -83,6 +90,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audioRef.current.pause();
         audioRef.current.removeEventListener('timeupdate', onTimeUpdate);
         audioRef.current.removeEventListener('loadedmetadata', onLoadedMetadata);
+        audioRef.current.removeEventListener('canplaythrough', onCanPlayThrough);
+        audioRef.current.removeEventListener('error', onError);
         audioRef.current.removeEventListener('ended', onEnded);
       }
     };
@@ -105,15 +114,15 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const play = () => {
     if (!audioRef.current) return;
+    console.log(`🎵 Attempting to play: ${audioRef.current.src}`);
     audioRef.current.play()
       .then(() => {
+        console.log('🎵 Audio playback started');
         setIsPlaying(true);
-        setAutoplayFailed(false);
       })
       .catch((err) => {
-        console.warn('Playback blocked or failed:', err);
+        console.warn('🎵 Audio playback failed:', err);
         setIsPlaying(false);
-        setAutoplayFailed(true);
       });
   };
 
@@ -156,14 +165,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Auto-play selected track
       setTimeout(() => {
         if (audioRef.current) {
+          console.log(`🎵 Attempting to play: ${audioRef.current.src}`);
           audioRef.current.play()
             .then(() => {
+              console.log('🎵 Audio playback started');
               setIsPlaying(true);
-              setAutoplayFailed(false);
             })
             .catch((err) => {
-              console.error(err);
-              setAutoplayFailed(true);
+              console.warn('🎵 Audio playback failed:', err);
             });
         }
       }, 50);
@@ -206,12 +215,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       selectTrack(track.id); // selectTrack has an auto-play timer, but we also want to catch failure there if needed
     } else {
       audioRef.current.src = url;
+      audioRef.current.preload = 'auto';
+      console.log(`🎵 Attempting to play: ${audioRef.current.src}`);
       audioRef.current.play().then(() => {
+        console.log('🎵 Audio playback started');
         setIsPlaying(true);
-        setAutoplayFailed(false);
       }).catch((err) => {
-        console.warn('PlayTrack blocked:', err);
-        setAutoplayFailed(true);
+        console.warn('🎵 Audio playback failed:', err);
       });
     }
   };
@@ -236,8 +246,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         prevTrack,
         seek,
         playTrack,
-        autoplayFailed,
-        setAutoplayFailed,
       }}
     >
       {children}

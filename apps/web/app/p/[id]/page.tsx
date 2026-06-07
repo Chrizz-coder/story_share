@@ -95,7 +95,7 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
   const noXSpring = useSpring(noX, { stiffness: 300, damping: 20 });
   const noYSpring = useSpring(noY, { stiffness: 300, damping: 20 });
 
-  const { playTrack, play, setVolume, autoplayFailed, setAutoplayFailed } = useAudio();
+  const { playTrack, play, setVolume } = useAudio();
 
   const [showToast, setShowToast] = useState(false);
   
@@ -142,7 +142,25 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
       playTrack(musicUrl, { volume: 0.4, loop: true });
       setMusicStarted(true);
     }
-  }, [proposal]);
+  }, [proposal, musicStarted, playTrack]);
+
+  // Silent interaction strategy for autoplay block
+  useEffect(() => {
+    const handleInteraction = () => {
+      console.log('🎵 Silent interaction triggered, ensuring playback.');
+      play();
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+    
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
+    
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+  }, [play]);
 
   // Stage advance timeline
   useEffect(() => {
@@ -307,25 +325,6 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
     <div className={styles.page} ref={containerRef}>
       {/* ── Home Button ── */}
       <HomeButton />
-
-      {/* ── Play Music Fallback Button ── */}
-      <AnimatePresence>
-        {autoplayFailed && (
-          <motion.button
-            className={styles.playMusicFallback}
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            onClick={() => {
-              play();
-              setAutoplayFailed(false);
-            }}
-            aria-label="Play Music"
-          >
-            🎵 Play Music
-          </motion.button>
-        )}
-      </AnimatePresence>
 
       {/* ── Share Success Toast ── */}
       <AnimatePresence>
