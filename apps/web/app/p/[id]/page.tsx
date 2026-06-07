@@ -43,7 +43,7 @@ const ACCEPT_PROPOSAL = gql`
 `;
 
 // Stage machine
-type Stage = 'LOADING' | 'INTRO' | 'GREETING' | 'TEASER' | 'QUESTION' | 'BUTTONS' | 'ACCEPTED';
+type Stage = 'LOADING' | 'ENVELOPE' | 'INTRO' | 'GREETING' | 'TEASER' | 'QUESTION' | 'BUTTONS' | 'ACCEPTED';
 
 const NO_TEXTS = [
   'No 😢',
@@ -132,35 +132,18 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
     // Increment view count (fire and forget)
     incrementViewCount({ variables: { id } }).catch(() => {});
 
-    // Kick off the intro sequence & start music based on category
-    setStage('INTRO');
+    setStage('ENVELOPE');
+  }, [proposal, stage, id, incrementViewCount]);
 
-    // Auto-play category music (no user choice required)
-    if (!musicStarted) {
+  const handleOpenProposal = () => {
+    if (proposal && !musicStarted) {
       const musicCategory = proposal.music ?? 'romantic';
       const musicUrl = getCategoryMusicUrl(musicCategory);
       playTrack(musicUrl, { volume: 0.4, loop: true });
       setMusicStarted(true);
     }
-  }, [proposal, musicStarted, playTrack]);
-
-  // Silent interaction strategy for autoplay block
-  useEffect(() => {
-    const handleInteraction = () => {
-      console.log('🎵 Silent interaction triggered, ensuring playback.');
-      play();
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('touchstart', handleInteraction);
-    };
-    
-    document.addEventListener('click', handleInteraction);
-    document.addEventListener('touchstart', handleInteraction);
-    
-    return () => {
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('touchstart', handleInteraction);
-    };
-  }, [play]);
+    setStage('INTRO');
+  };
 
   // Stage advance timeline
   useEffect(() => {
@@ -395,6 +378,30 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
       {/* ── Content Layer ── */}
       <div className={styles.content}>
         <AnimatePresence mode="wait">
+
+          {/* ── ENVELOPE ── */}
+          {stage === 'ENVELOPE' && (
+            <motion.div
+              key="envelope"
+              className={styles.envelopeWrap}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.button
+                className={styles.openBtn}
+                onClick={handleOpenProposal}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                animate={{ y: [0, -10, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              >
+                💌 Tap to Open
+              </motion.button>
+              <p className={styles.envelopeText}>A special message for {recipientName}</p>
+            </motion.div>
+          )}
 
           {/* ── INTRO ── */}
           {stage === 'INTRO' && (
