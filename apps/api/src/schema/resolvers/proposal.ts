@@ -1,5 +1,6 @@
 import { GraphQLError } from 'graphql';
 import Proposal from '../../models/Proposal';
+import Order from '../../models/Order';
 
 export const ProposalQueries = {
   getProposal: async (_: any, { id }: { id: string }) => {
@@ -66,6 +67,28 @@ export const ProposalMutations = {
     } catch (error) {
       console.error('Error incrementing view count:', error);
       throw new GraphQLError('Failed to increment view count');
+    }
+  },
+  unlockProposalSharing: async (_: any, { proposalId, orderId }: { proposalId: string; orderId: string }) => {
+    try {
+      const order = await Order.findOne({ orderId });
+      if (!order) throw new GraphQLError('Order not found');
+      if (order.paymentStatus !== 'success') throw new GraphQLError('Payment not verified');
+
+      const proposal = await Proposal.findByIdAndUpdate(
+        proposalId,
+        { shareUnlocked: true },
+        { new: true }
+      );
+      if (!proposal) throw new GraphQLError('Proposal not found');
+
+      return {
+        ...proposal.toObject(),
+        id: proposal._id.toString(),
+      };
+    } catch (error) {
+      console.error('Error unlocking proposal sharing:', error);
+      throw new GraphQLError('Failed to unlock proposal sharing');
     }
   },
 };

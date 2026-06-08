@@ -1,0 +1,69 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .name {
+    display: block;
+  }
+}
+
+.signOutBtn {
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #4b5563;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.signOutBtn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.signInBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+}
+
+.signInBtn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.loading {
+  font-size: 14px;
+  color: #6b7280;
+}

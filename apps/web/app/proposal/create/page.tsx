@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@apollo/client';
+import { useSession } from 'next-auth/react';
 import { CREATE_PROPOSAL } from '@/graphql/proposals';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -47,6 +48,7 @@ const PROPOSAL_TYPES = [
 ] as const;
 
 export default function ProposalCreator() {
+  const { data: session } = useSession();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [proposalId, setProposalId] = useState('');
   const [shareUrl, setShareUrl] = useState('');
@@ -412,6 +414,8 @@ export default function ProposalCreator() {
                   proposalId={proposalId}
                   shareUrl={shareUrl}
                   onUnlocked={() => setShareUnlocked(true)}
+                  userEmail={session?.user?.email ?? undefined}
+                  template="romantic"
                 />
               ) : (
                 /* ── Share Actions (unlocked) ── */

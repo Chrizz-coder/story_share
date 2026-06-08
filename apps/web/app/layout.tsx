@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import ApolloWrapper from '@/components/ApolloWrapper';
 import { AudioProvider } from '@/context/AudioContext';
+import NextAuthProvider from '@/components/NextAuthProvider';
 
 export const metadata: Metadata = {
   title: 'StoryShare — Create & Share Your Moments',
@@ -20,9 +21,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <ApolloWrapper>
-          <AudioProvider>
-            {children}
-          </AudioProvider>
+          <NextAuthProvider>
+            <AudioProvider>
+              {children}
+            </AudioProvider>
+          </NextAuthProvider>
         </ApolloWrapper>
       </body>
     </html>

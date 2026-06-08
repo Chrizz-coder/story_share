@@ -1,8 +1,11 @@
 import { z } from 'zod';
 
 export const CreateOrderSchema = z.object({
-  productType: z.enum(['premium', 'gift', 'subscription'], {
-    errorMap: () => ({ message: "productType must be 'premium', 'gift', or 'subscription'" }),
+  productCategory: z.enum(['plan', 'template_unlock', 'gift'], {
+    errorMap: () => ({ message: "productCategory must be 'plan', 'template_unlock', or 'gift'" }),
+  }),
+  productType: z.enum(['premium', 'gift', 'subscription', 'template_unlock'], {
+    errorMap: () => ({ message: "productType must be 'premium', 'gift', 'subscription', or 'template_unlock'" }),
   }),
   productName: z
     .string()

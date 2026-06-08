@@ -6,8 +6,11 @@ export interface IOrder extends Document {
   email: string;
   amount: number;
   currency: string;
-  productType: 'premium' | 'gift' | 'subscription';
+  productCategory: 'plan' | 'template_unlock' | 'gift';
+  productType: 'premium' | 'gift' | 'subscription' | 'template_unlock';
   productName: string;
+  resourceId?: Types.ObjectId | null;
+  resourceModel?: string | null;
   paymentId?: string;
   paymentStatus: 'pending' | 'success' | 'failed';
   razorpaySignature?: string;
@@ -24,12 +27,19 @@ const OrderSchema: Schema = new Schema(
     email: { type: String, required: true },
     amount: { type: Number, required: true },
     currency: { type: String, default: 'INR' },
+    productCategory: {
+      type: String,
+      enum: ['plan', 'template_unlock', 'gift'],
+      required: true,
+    },
     productType: {
       type: String,
-      enum: ['premium', 'gift', 'subscription'],
+      enum: ['premium', 'gift', 'subscription', 'template_unlock'],
       required: true,
     },
     productName: { type: String, required: true },
+    resourceId: { type: Schema.Types.ObjectId, default: null },
+    resourceModel: { type: String, default: null },
     paymentId: { type: String },
     paymentStatus: {
       type: String,

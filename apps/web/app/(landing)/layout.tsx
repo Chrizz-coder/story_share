@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import AuthButton from '@/components/AuthButton';
 import styles from './landing.module.css';
 
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
@@ -14,7 +15,7 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
           </Link>
           <nav className={styles.nav}>
             <Link href="#features" className={styles.navLink}>Features</Link>
-            <Link href="/login" className={styles.signInBtn}>Sign In</Link>
+            <AuthButton />
           </nav>
         </div>
       </header>

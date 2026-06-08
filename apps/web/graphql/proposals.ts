@@ -29,7 +29,17 @@ export const GET_PROPOSAL = gql`
       photoData
       viewCount
       accepted
+      shareUnlocked
       createdAt
+    }
+  }
+`;
+
+export const UNLOCK_PROPOSAL_SHARING = gql`
+  mutation UnlockProposalSharing($proposalId: ID!, $orderId: String!) {
+    unlockProposalSharing(proposalId: $proposalId, orderId: $orderId) {
+      id
+      shareUnlocked
     }
   }
 `;
