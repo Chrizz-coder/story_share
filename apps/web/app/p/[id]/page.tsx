@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti';
 import { useAudio } from '@/context/AudioContext';
 import { getCategoryMusicUrl } from '@/lib/proposalAudio';
 import HomeButton from '@/components/HomeButton';
+import Footer from '@/components/Footer';
 import styles from './proposal.module.css';
 
 const GET_PROPOSAL = gql`
@@ -305,6 +306,7 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
   const photoData = proposal.photoData;
 
   return (
+    <>
     <div className={styles.page} ref={containerRef}>
       {/* ── Home Button ── */}
       <HomeButton />
@@ -615,5 +617,7 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
         </AnimatePresence>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

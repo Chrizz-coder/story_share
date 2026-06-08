@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import HomeButton from '@/components/HomeButton';
 import ShareLockCard from '@/components/ShareLockCard';
+import Footer from '@/components/Footer';
 import styles from './create.module.css';
 
 interface ProposalForm {
@@ -155,6 +156,7 @@ export default function ProposalCreator() {
   }));
 
   return (
+    <>
     <div className={`${styles.page} light-bg`}>
       {/* ── Fixed Home Button ── */}
       <HomeButton />
@@ -455,5 +457,7 @@ export default function ProposalCreator() {
         </AnimatePresence>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
