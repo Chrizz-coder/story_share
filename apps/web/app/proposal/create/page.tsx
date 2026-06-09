@@ -44,7 +44,8 @@ const PROPOSAL_TYPES = [
     key: 'birthday',
     label: 'Birthday',
     emoji: '🎂',
-    available: false,
+    available: true,
+    badge: 'New',
   },
 ] as const;
 
@@ -55,6 +56,7 @@ export default function ProposalCreator() {
   const [shareUrl, setShareUrl] = useState('');
   const [shareUnlocked, setShareUnlocked] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<'romantic' | 'birthday'>('romantic');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [createProposal, { loading, error }] = useMutation(CREATE_PROPOSAL);
@@ -105,10 +107,10 @@ export default function ProposalCreator() {
           input: {
             recipientName: data.recipientName,
             senderName: data.senderName,
-            template: 'romantic',
+            template: selectedTemplate,
             customMessage: data.customMessage || '',
-            theme: 'rose-glow',
-            music: 'romantic', // category key — viewer loads /music/romantic.mp3 automatically
+            theme: selectedTemplate === 'birthday' ? 'birthday' : 'rose-glow',
+            music: selectedTemplate, // viewer loads /music/{selectedTemplate}.mp3
             photoData: data.photoData || null,
           },
         },
@@ -212,10 +214,14 @@ export default function ProposalCreator() {
           transition={{ duration: 0.5 }}
         >
           <div className={styles.headerIcon}>
-            <Heart size={28} fill="currentColor" />
+            {selectedTemplate === 'birthday' ? <Gift size={28} fill="currentColor" /> : <Heart size={28} fill="currentColor" />}
           </div>
-          <h1 className={styles.headerTitle}>Create a Proposal</h1>
-          <p className={styles.headerSub}>Make someone&apos;s heart skip a beat 💕</p>
+          <h1 className={styles.headerTitle}>
+            {selectedTemplate === 'birthday' ? 'Create a Birthday Surprise' : 'Create a Proposal'}
+          </h1>
+          <p className={styles.headerSub}>
+            {selectedTemplate === 'birthday' ? 'Send a playful birthday greeting 🎂' : 'Make someone\'s heart skip a beat 💕'}
+          </p>
         </motion.div>
 
         <AnimatePresence mode="wait">
@@ -235,11 +241,22 @@ export default function ProposalCreator() {
                 <div className={styles.typeGrid}>
                   {PROPOSAL_TYPES.map((type) => {
                     if (type.available) {
+                      const isActive = selectedTemplate === type.key;
                       return (
-                        <div key={type.key} className={`${styles.typeTile} ${styles.typeTileActive}`}>
+                        <div 
+                          key={type.key} 
+                          className={`${styles.typeTile} ${isActive ? styles.typeTileActive : ''}`}
+                          onClick={() => setSelectedTemplate(type.key as 'romantic' | 'birthday')}
+                          style={{ cursor: 'pointer', position: 'relative' }}
+                        >
                           <span className={styles.typeEmoji}>{type.emoji}</span>
                           <span className={styles.typeLabel}>{type.label}</span>
-                          <div className={styles.activePill}>Selected ✓</div>
+                          {isActive && <div className={styles.activePill}>Selected ✓</div>}
+                          {('badge' in type) && type.badge && !isActive && (
+                            <div className={styles.comingSoonPill} style={{ background: '#8b6be8', color: 'white', opacity: 1 }}>
+                              {type.badge as string}
+                            </div>
+                          )}
                         </div>
                       );
                     }
@@ -301,8 +318,10 @@ export default function ProposalCreator() {
 
                 <div className={styles.field}>
                   <label className={styles.label} htmlFor="customMessage">
-                    Personal Message{' '}
-                    <span className={styles.optional}>(shown after they say Yes)</span>
+                    {selectedTemplate === 'birthday' ? 'Birthday Message ' : 'Personal Message '}
+                    <span className={styles.optional}>
+                      {selectedTemplate === 'birthday' ? '(shown on reveal)' : '(shown after they say Yes)'}
+                    </span>
                   </label>
                   <textarea
                     id="customMessage"
@@ -316,7 +335,9 @@ export default function ProposalCreator() {
                 <div className={styles.field}>
                   <label className={styles.label}>
                     Photo{' '}
-                    <span className={styles.optional}>(optional — shown after Yes)</span>
+                    <span className={styles.optional}>
+                      {selectedTemplate === 'birthday' ? '(optional — shown on reveal)' : '(optional — shown after Yes)'}
+                    </span>
                   </label>
                   <div
                     className={`${styles.uploadZone} ${photoPreview ? styles.uploadZoneHasPhoto : ''}`}
@@ -371,7 +392,7 @@ export default function ProposalCreator() {
                   ) : (
                     <>
                       <Sparkles size={18} />
-                      Generate My Proposal
+                      {selectedTemplate === 'birthday' ? 'Generate Birthday Page' : 'Generate My Proposal'}
                     </>
                   )}
                 </button>
@@ -417,7 +438,7 @@ export default function ProposalCreator() {
                   shareUrl={shareUrl}
                   onUnlocked={() => setShareUnlocked(true)}
                   userEmail={session?.user?.email ?? undefined}
-                  template="romantic"
+                  template={selectedTemplate}
                 />
               ) : (
                 /* ── Share Actions (unlocked) ── */
