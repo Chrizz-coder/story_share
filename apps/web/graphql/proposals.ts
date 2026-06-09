@@ -10,6 +10,8 @@ export const CREATE_PROPOSAL = gql`
       customMessage
       theme
       music
+      age
+      nickname
       photoData
       createdAt
     }
@@ -26,6 +28,8 @@ export const GET_PROPOSAL = gql`
       customMessage
       theme
       music
+      age
+      nickname
       photoData
       viewCount
       accepted

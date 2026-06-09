@@ -47,6 +47,8 @@ export const typeDefs = gql`
     customMessage: String!
     theme: String!
     music: String!
+    age: Int
+    nickname: String
     photoData: String
     viewCount: Int!
     accepted: Boolean!
@@ -61,6 +63,8 @@ export const typeDefs = gql`
     customMessage: String
     theme: String!
     music: String!
+    age: Int
+    nickname: String
     photoData: String
   }
 

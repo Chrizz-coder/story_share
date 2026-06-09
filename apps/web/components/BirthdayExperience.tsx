@@ -9,129 +9,186 @@ import Footer from '@/components/Footer';
 import styles from './BirthdayExperience.module.css';
 
 type Stage = 'INTRO' | 'GIFT_OPENING' | 'REVEAL';
-
-const BALLOONS = Array.from({ length: 15 }, (_, i) => ({
-  id: i,
-  left: `${5 + ((i * 6.7) % 90)}%`,
-  size: 30 + ((i * 5) % 25),
-  delay: (i * 0.4) % 5,
-  duration: 8 + ((i * 2.3) % 7),
-  emoji: ['🎈', '🎈', '🎈', '✨', '🎂'][i % 5],
-}));
+type GiftAnim = 'IDLE' | 'WIGGLE' | 'GLOW' | 'PULSE' | 'EXPLODE' | 'DONE';
 
 export default function BirthdayExperience({ proposal }: { proposal: any }) {
   const [stage, setStage] = useState<Stage>('INTRO');
-  const { playTrack, setVolume } = useAudio();
+  const [giftAnim, setGiftAnim] = useState<GiftAnim>('IDLE');
+  const { playTrack } = useAudio();
 
-  const handleOpenGift = () => {
-    // Start music
+  // Ambient particles
+  const ambientBalloons = Array.from({ length: 8 }, (_, i) => ({
+    id: i,
+    left: `${10 + (i * 11)}%`,
+    delay: i * 1.5,
+    duration: 15 + (i % 3) * 5,
+    emoji: ['🎈', '🎂', '✨', '🎈'][i % 4]
+  }));
+
+  const sparkles = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    duration: 1 + Math.random() * 2,
+    delay: Math.random() * 2
+  }));
+
+  // Auto-play music on mount (browser permitting)
+  useEffect(() => {
+    // We try to autoplay. If it fails due to browser policy, 
+    // it will definitely play when they click "Open My Gift".
+    playTrack('/music/birthday.mp3', { volume: 0.5, loop: true });
+  }, [playTrack]);
+
+  const runGiftSequence = () => {
+    // Ensure music is playing
     playTrack('/music/birthday.mp3', { volume: 0.5, loop: true });
     
-    // Transition to opening
     setStage('GIFT_OPENING');
-
-    // Simulate opening animation duration
+    
+    // 1. Shake / Wiggle
+    setGiftAnim('WIGGLE');
+    
+    // 2. Glow
     setTimeout(() => {
-      triggerConfetti();
+      setGiftAnim('GLOW');
+    }, 800);
+    
+    // 3. Countdown Pulse
+    setTimeout(() => {
+      setGiftAnim('PULSE');
+    }, 1600);
+    
+    // 4. Explosion Effect & Confetti Cannon & Balloon Release
+    setTimeout(() => {
+      setGiftAnim('EXPLODE');
+      triggerConfettiCannon();
+    }, 2800);
+    
+    // 5. Card Emerges From Box
+    setTimeout(() => {
+      setGiftAnim('DONE');
       setStage('REVEAL');
-    }, 2000); // 2 seconds of shaking/popping
+    }, 3200);
   };
 
-  const triggerConfetti = () => {
-    const duration = 3000;
-    const end = Date.now() + duration;
+  const triggerConfettiCannon = () => {
+    const duration = 4000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 45, spread: 360, ticks: 100, zIndex: 100 };
 
-    const frame = () => {
-      confetti({
-        particleCount: 5,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ['#8b6be8', '#f4b4e8', '#ffd166', '#6ecbf5', '#ffffff']
-      });
-      confetti({
-        particleCount: 5,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ['#8b6be8', '#f4b4e8', '#ffd166', '#6ecbf5', '#ffffff']
-      });
+    function randomInRange(min: number, max: number) {
+      return Math.random() * (max - min) + min;
+    }
 
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
+    const interval: any = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
       }
-    };
-    frame();
+
+      const particleCount = 50 * (timeLeft / duration);
+      confetti(Object.assign({}, defaults, { 
+        particleCount, 
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#8b6be8', '#f4b4e8', '#ffd166', '#6ecbf5', '#ffffff']
+      }));
+      confetti(Object.assign({}, defaults, { 
+        particleCount, 
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#8b6be8', '#f4b4e8', '#ffd166', '#6ecbf5', '#ffffff']
+      }));
+    }, 250);
   };
 
   const handleReplay = () => {
     setStage('GIFT_OPENING');
-    setTimeout(() => {
-      triggerConfetti();
-      setStage('REVEAL');
-    }, 1500);
+    setGiftAnim('IDLE');
+    setTimeout(() => runGiftSequence(), 100);
   };
 
-  const { recipientName, senderName, customMessage, photoData } = proposal;
+  const { recipientName, senderName, customMessage, age, nickname, photoData } = proposal;
+
+  const displayName = nickname ? `"${nickname}"` : recipientName;
+
+  // Gift Animation Variants
+  const giftVariants = {
+    IDLE: { scale: 1, rotate: 0 },
+    WIGGLE: { 
+      rotate: [0, -10, 10, -10, 10, 0], 
+      transition: { duration: 0.6, repeat: Infinity } 
+    },
+    GLOW: { 
+      scale: 1.05, 
+      filter: 'drop-shadow(0 0 40px rgba(255, 209, 102, 0.8))',
+      transition: { duration: 0.8 } 
+    },
+    PULSE: { 
+      scale: [1.05, 1.2, 1.05, 1.2, 1.05], 
+      filter: 'drop-shadow(0 0 60px rgba(255, 209, 102, 1))',
+      transition: { duration: 1.2 } 
+    },
+    EXPLODE: { 
+      scale: 2, 
+      opacity: 0, 
+      filter: 'blur(20px)',
+      transition: { duration: 0.4 } 
+    },
+    DONE: { opacity: 0, display: 'none' }
+  };
 
   return (
     <>
       <div className={styles.page}>
         <HomeButton />
 
-        {/* Floating Balloons Layer - active during reveal */}
-        <AnimatePresence>
-          {stage === 'REVEAL' && (
-            <motion.div
-              className={styles.balloonsLayer}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+        {/* Ambient Background Layer */}
+        <div className={styles.ambientLayer}>
+          {sparkles.map(s => (
+            <div 
+              key={`sparkle-${s.id}`} 
+              className={styles.sparkle} 
+              style={{ left: s.left, top: s.top, animationDuration: `${s.duration}s`, animationDelay: `${s.delay}s` }} 
+            />
+          ))}
+          {ambientBalloons.map(b => (
+            <div 
+              key={`balloon-${b.id}`} 
+              className={styles.ambientBalloon}
+              style={{ left: b.left, animationDuration: `${b.duration}s`, animationDelay: `${b.delay}s` }}
             >
-              {BALLOONS.map((b) => (
-                <div
-                  key={b.id}
-                  className={styles.balloon}
-                  style={{
-                    left: b.left,
-                    fontSize: b.size,
-                    animationDelay: `${b.delay}s`,
-                    animationDuration: `${b.duration}s`,
-                  }}
-                >
-                  {b.emoji}
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {b.emoji}
+            </div>
+          ))}
+        </div>
 
         <div className={styles.content}>
           <AnimatePresence mode="wait">
             
-            {/* ── INTRO STAGE ── */}
+            {/* ── STAGE 1: INTRO ── */}
             {stage === 'INTRO' && (
               <motion.div
                 key="intro"
-                className={styles.introWrap}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.6 }}
+                exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
               >
                 <motion.h1 
                   className={styles.title}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
+                  transition={{ delay: 0.4, duration: 0.8 }}
                 >
-                  🎉 Happy Birthday<br/>{recipientName} 🎂
+                  🎉 Happy Birthday<br/>{displayName} 🎂
                 </motion.h1>
                 <motion.p 
                   className={styles.senderText}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
+                  transition={{ delay: 0.8 }}
                 >
                   From {senderName} ❤️
                 </motion.p>
@@ -140,68 +197,90 @@ export default function BirthdayExperience({ proposal }: { proposal: any }) {
                   className={styles.subtitle}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                  style={{ marginTop: 24 }}
+                  transition={{ delay: 1.2 }}
                 >
                   A surprise gift is waiting...
                 </motion.p>
 
                 <motion.button
                   className={styles.openBtn}
-                  onClick={handleOpenGift}
+                  onClick={runGiftSequence}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.1, type: 'spring' }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ delay: 1.6, type: 'spring', stiffness: 200 }}
                 >
                   🎁 Open My Gift
                 </motion.button>
               </motion.div>
             )}
 
-            {/* ── GIFT OPENING STAGE ── */}
+            {/* ── STAGE 2: GIFT OPENING SEQUENCE ── */}
             {stage === 'GIFT_OPENING' && (
               <motion.div
                 key="gift"
-                className={styles.giftWrap}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.2, filter: 'blur(10px)' }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 0, y: 100 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+                className={styles.giftContainer}
               >
-                <div className={`${styles.hugeGift} ${styles.shake}`}>🎁</div>
+                {giftAnim === 'GLOW' || giftAnim === 'PULSE' ? <div className={styles.glowAura} /> : null}
+                <motion.div
+                  className={styles.hugeGift}
+                  variants={giftVariants}
+                  animate={giftAnim}
+                >
+                  🎁
+                </motion.div>
               </motion.div>
             )}
 
-            {/* ── REVEAL STAGE ── */}
+            {/* ── STAGE 3: CARD REVEAL ── */}
             {stage === 'REVEAL' && (
               <motion.div
                 key="reveal"
-                className={styles.revealWrap}
-                initial={{ opacity: 0, scale: 0.8, y: 40 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ type: 'spring', bounce: 0.4, duration: 0.8 }}
+                className={styles.cardWrapper}
+                initial={{ opacity: 0, scale: 0.5, y: 150, rotateX: 45 }}
+                animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
+                transition={{ type: 'spring', damping: 15, stiffness: 80, delay: 0.2 }}
               >
-                <h1 className={styles.title}>🎉 Happy Birthday<br/>{recipientName}! 🎂</h1>
-                
-                <div className={styles.messageCard}>
-                  {photoData && (
-                    <div className={styles.photoWrap} style={{ marginBottom: 24 }}>
-                      <img src={photoData} alt="Birthday Memory" className={styles.photo} />
-                    </div>
-                  )}
+                <div className={styles.greetingCard}>
+                  <div className={styles.cardBanner}>
+                    <span>🎈</span> Happy Birthday <span>🎂</span>
+                  </div>
                   
-                  <p className={styles.messageText}>
-                    {customMessage || "Hope your day is filled with happiness, laughter, success, and unforgettable memories!"}
-                  </p>
-                  
-                  <p className={styles.senderText} style={{ marginTop: 20, textAlign: 'right' }}>
-                    — {senderName} ❤️
-                  </p>
+                  <div className={styles.cardInner}>
+                    {age && (
+                      <div className={styles.ageBadge}>Turning {age}! 🎉</div>
+                    )}
+                    
+                    {photoData && (
+                      <div className={styles.photoFrame}>
+                        <img src={photoData} alt="Birthday Memory" />
+                      </div>
+                    )}
+                    
+                    <p className={styles.cardMessage}>
+                      {customMessage || "Wishing you a year full of happiness and success. 🎂✨"}
+                    </p>
+                    
+                    <p className={styles.cardSender}>
+                      — {senderName}
+                    </p>
+                  </div>
                 </div>
 
-                <button className={styles.replayBtn} onClick={handleReplay}>
+                <motion.button 
+                  className={styles.replayBtn} 
+                  onClick={handleReplay}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2 }}
+                >
                   🎈 Celebrate Again
-                </button>
+                </motion.button>
               </motion.div>
             )}
 

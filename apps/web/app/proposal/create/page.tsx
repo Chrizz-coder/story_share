@@ -1,13 +1,13 @@
 'use client';
 import React, { useState, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useMutation } from '@apollo/client';
 import { useSession } from 'next-auth/react';
 import { CREATE_PROPOSAL } from '@/graphql/proposals';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart, Sparkles, Coffee, Gift,
-  Upload, X, ExternalLink, Check,
+  Upload, X, ExternalLink, Check, Image as ImageIcon
 } from 'lucide-react';
 import HomeButton from '@/components/HomeButton';
 import ShareLockCard from '@/components/ShareLockCard';
@@ -18,35 +18,16 @@ interface ProposalForm {
   recipientName: string;
   senderName: string;
   customMessage: string;
+  age?: number;
+  nickname?: string;
   photoData?: string;
 }
 
 const PROPOSAL_TYPES = [
-  {
-    key: 'romantic',
-    label: 'Romantic Proposal',
-    emoji: '💕',
-    available: true,
-  },
-  {
-    key: 'marriage',
-    label: 'Marriage',
-    emoji: '💍',
-    available: false,
-  },
-  {
-    key: 'date',
-    label: 'Date Invitation',
-    emoji: '☕',
-    available: false,
-  },
-  {
-    key: 'birthday',
-    label: 'Birthday',
-    emoji: '🎂',
-    available: true,
-    badge: 'New',
-  },
+  { key: 'romantic', label: 'Romantic Proposal', emoji: '💕', available: true },
+  { key: 'birthday', label: 'Birthday', emoji: '🎂', available: true, badge: 'New' },
+  { key: 'marriage', label: 'Marriage', emoji: '💍', available: false },
+  { key: 'date', label: 'Date Invitation', emoji: '☕', available: false },
 ] as const;
 
 export default function ProposalCreator() {
@@ -65,10 +46,18 @@ export default function ProposalCreator() {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors },
   } = useForm<ProposalForm>({
-    defaultValues: { customMessage: '', recipientName: '', senderName: '' },
+    defaultValues: { customMessage: '', recipientName: '', senderName: '', age: undefined, nickname: '' },
   });
+
+  // Watch fields for live preview
+  const liveRecipientName = useWatch({ control, name: 'recipientName' });
+  const liveSenderName = useWatch({ control, name: 'senderName' });
+  const liveMessage = useWatch({ control, name: 'customMessage' });
+  const liveAge = useWatch({ control, name: 'age' });
+  const liveNickname = useWatch({ control, name: 'nickname' });
 
   // ── Photo upload ─────────────────────────────────────────────────────
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,8 +98,10 @@ export default function ProposalCreator() {
             senderName: data.senderName,
             template: selectedTemplate,
             customMessage: data.customMessage || '',
+            age: data.age ? Number(data.age) : null,
+            nickname: data.nickname || null,
             theme: selectedTemplate === 'birthday' ? 'birthday' : 'rose-glow',
-            music: selectedTemplate, // viewer loads /music/{selectedTemplate}.mp3
+            music: selectedTemplate,
             photoData: data.photoData || null,
           },
         },
@@ -132,56 +123,58 @@ export default function ProposalCreator() {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: 'I have a special question for you 💕',
-          text: 'Someone has a romantic proposal for you!',
+          title: selectedTemplate === 'birthday' ? 'Happy Birthday! 🎂' : 'I have a special question for you 💕',
+          text: selectedTemplate === 'birthday' ? 'Someone sent you a birthday surprise!' : 'Someone has a romantic proposal for you!',
           url: shareUrl,
         });
       } catch (e) {
         // user aborted or failed
       }
     } else {
-      // Fallback to clipboard
       await navigator.clipboard.writeText(shareUrl);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }
   };
 
-  // ── Background hearts ────────────────────────────────────────────────
-  const bgHearts = Array.from({ length: 12 }, (_, i) => ({
+  // Background elements
+  const bgElements = Array.from({ length: 15 }, (_, i) => ({
     id: i,
-    left: `${8 + i * 7.5}%`,
+    left: `${8 + i * 6}%`,
     top: `${10 + ((i * 37) % 80)}%`,
     size: 14 + (i % 4) * 6,
-    delay: i * 1.3,
+    delay: i * 0.5,
     duration: 12 + (i % 5) * 3,
   }));
 
+  const isBirthday = selectedTemplate === 'birthday';
+
   return (
     <>
-    <div className={`${styles.page} light-bg`}>
-      {/* ── Fixed Home Button ── */}
+    <div className={`${styles.page} ${isBirthday ? styles.pageBirthday : 'light-bg'}`}>
       <HomeButton />
 
-      {/* Background hearts */}
-      <div className={styles.bgHearts} aria-hidden>
-        {bgHearts.map((h) => (
+      {/* Dynamic Background */}
+      <div className={isBirthday ? styles.bgBalloons : styles.bgHearts} aria-hidden>
+        {bgElements.map((el) => (
           <div
-            key={h.id}
-            className={styles.bgHeart}
+            key={el.id}
+            className={isBirthday ? styles.bgBalloon : styles.bgHeart}
             style={{
-              left: h.left,
-              top: h.top,
-              width: h.size,
-              height: h.size,
-              animationDelay: `${h.delay}s`,
-              animationDuration: `${h.duration}s`,
+              left: el.left,
+              top: isBirthday ? undefined : el.top,
+              width: isBirthday ? undefined : el.size,
+              height: isBirthday ? undefined : el.size,
+              fontSize: isBirthday ? el.size + 10 : undefined,
+              animationDelay: `${el.delay}s`,
+              animationDuration: `${el.duration}s`,
             }}
-          />
+          >
+            {isBirthday ? ['🎈', '✨', '🎈', '🎈'][el.id % 4] : ''}
+          </div>
         ))}
       </div>
 
-      {/* Coming soon & Copied toast */}
       <AnimatePresence>
         {showComingSoon && (
           <motion.div
@@ -206,7 +199,6 @@ export default function ProposalCreator() {
       </AnimatePresence>
 
       <div className={styles.container}>
-        {/* Header */}
         <motion.div
           className={styles.header}
           initial={{ opacity: 0, y: -20 }}
@@ -214,18 +206,17 @@ export default function ProposalCreator() {
           transition={{ duration: 0.5 }}
         >
           <div className={styles.headerIcon}>
-            {selectedTemplate === 'birthday' ? <Gift size={28} fill="currentColor" /> : <Heart size={28} fill="currentColor" />}
+            {isBirthday ? <Gift size={28} fill="currentColor" /> : <Heart size={28} fill="currentColor" />}
           </div>
           <h1 className={styles.headerTitle}>
-            {selectedTemplate === 'birthday' ? 'Create a Birthday Surprise' : 'Create a Proposal'}
+            {isBirthday ? 'Create a Birthday Surprise 🎂' : 'Create a Proposal'}
           </h1>
           <p className={styles.headerSub}>
-            {selectedTemplate === 'birthday' ? 'Send a playful birthday greeting 🎂' : 'Make someone\'s heart skip a beat 💕'}
+            {isBirthday ? 'Create a memorable birthday experience for someone special.' : 'Make someone\'s heart skip a beat 💕'}
           </p>
         </motion.div>
 
         <AnimatePresence mode="wait">
-          {/* ── FORM ── */}
           {!proposalId && (
             <motion.div
               key="form"
@@ -247,14 +238,14 @@ export default function ProposalCreator() {
                           key={type.key} 
                           className={`${styles.typeTile} ${isActive ? styles.typeTileActive : ''}`}
                           onClick={() => setSelectedTemplate(type.key as 'romantic' | 'birthday')}
-                          style={{ cursor: 'pointer', position: 'relative' }}
+                          style={{ cursor: 'pointer' }}
                         >
                           <span className={styles.typeEmoji}>{type.emoji}</span>
                           <span className={styles.typeLabel}>{type.label}</span>
                           {isActive && <div className={styles.activePill}>Selected ✓</div>}
                           {('badge' in type) && type.badge && !isActive && (
                             <div className={styles.comingSoonPill} style={{ background: '#8b6be8', color: 'white', opacity: 1 }}>
-                              {type.badge as string}
+                              {type.badge}
                             </div>
                           )}
                         </div>
@@ -278,73 +269,134 @@ export default function ProposalCreator() {
 
               <div className={styles.divider} />
 
-              {/* Form */}
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
-                <div className={styles.namesRow}>
-                  <div className={styles.field}>
-                    <label className={styles.label} htmlFor="recipientName">
-                      Their Name <span className={styles.required}>*</span>
-                    </label>
-                    <input
-                      id="recipientName"
-                      type="text"
-                      className={`${styles.input} ${errors.recipientName ? styles.inputError : ''}`}
-                      placeholder="e.g. Sarah"
-                      {...register('recipientName', { required: 'Recipient name is required' })}
-                    />
-                    {errors.recipientName && (
-                      <span className={styles.errorText}>{errors.recipientName.message}</span>
-                    )}
-                  </div>
+                {/* ── BIRTHDAY FIELDS ── */}
+                {isBirthday ? (
+                  <>
+                    <div className={styles.namesRow}>
+                      <div className={styles.field}>
+                        <label className={styles.label} htmlFor="recipientName">
+                          Birthday Person Name <span className={styles.required}>*</span>
+                        </label>
+                        <input
+                          id="recipientName"
+                          type="text"
+                          className={`${styles.input} ${errors.recipientName ? styles.inputError : ''}`}
+                          placeholder="e.g. Sarah"
+                          {...register('recipientName', { required: 'Name is required' })}
+                        />
+                      </div>
+                      <div className={styles.field}>
+                        <label className={styles.label} htmlFor="senderName">
+                          Your Name <span className={styles.required}>*</span>
+                        </label>
+                        <input
+                          id="senderName"
+                          type="text"
+                          className={`${styles.input} ${errors.senderName ? styles.inputError : ''}`}
+                          placeholder="e.g. Alex"
+                          {...register('senderName', { required: 'Name is required' })}
+                        />
+                      </div>
+                    </div>
 
-                  <div className={styles.field}>
-                    <label className={styles.label} htmlFor="senderName">
-                      Your Name <span className={styles.required}>*</span>
-                    </label>
-                    <input
-                      id="senderName"
-                      type="text"
-                      className={`${styles.input} ${errors.senderName ? styles.inputError : ''}`}
-                      placeholder="e.g. Alex"
-                      {...register('senderName', { required: 'Your name is required' })}
-                    />
-                    {errors.senderName && (
-                      <span className={styles.errorText}>{errors.senderName.message}</span>
-                    )}
-                  </div>
-                </div>
+                    <div className={styles.namesRow} style={{ marginTop: 16 }}>
+                      <div className={styles.field}>
+                        <label className={styles.label} htmlFor="age">
+                          Age <span className={styles.optional}>(Optional)</span>
+                        </label>
+                        <input
+                          id="age"
+                          type="number"
+                          className={styles.input}
+                          placeholder="e.g. 21"
+                          {...register('age', { valueAsNumber: true })}
+                        />
+                      </div>
+                      <div className={styles.field}>
+                        <label className={styles.label} htmlFor="nickname">
+                          Nickname <span className={styles.optional}>(Optional)</span>
+                        </label>
+                        <input
+                          id="nickname"
+                          type="text"
+                          className={styles.input}
+                          placeholder="e.g. Princess"
+                          {...register('nickname')}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.field} style={{ marginTop: 16 }}>
+                      <label className={styles.label} htmlFor="customMessage">
+                        Birthday Message <span className={styles.required}>*</span>
+                      </label>
+                      <textarea
+                        id="customMessage"
+                        className={styles.textarea}
+                        placeholder="Happy Birthday Sarah! Wishing you happiness, success and lots of amazing memories. Enjoy your special day! 🎂✨"
+                        rows={4}
+                        {...register('customMessage', { required: 'Message is required' })}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  /* ── ROMANTIC FIELDS ── */
+                  <>
+                    <div className={styles.namesRow}>
+                      <div className={styles.field}>
+                        <label className={styles.label} htmlFor="recipientName">
+                          Their Name <span className={styles.required}>*</span>
+                        </label>
+                        <input
+                          id="recipientName"
+                          type="text"
+                          className={`${styles.input} ${errors.recipientName ? styles.inputError : ''}`}
+                          placeholder="e.g. Sarah"
+                          {...register('recipientName', { required: 'Recipient name is required' })}
+                        />
+                      </div>
+                      <div className={styles.field}>
+                        <label className={styles.label} htmlFor="senderName">
+                          Your Name <span className={styles.required}>*</span>
+                        </label>
+                        <input
+                          id="senderName"
+                          type="text"
+                          className={`${styles.input} ${errors.senderName ? styles.inputError : ''}`}
+                          placeholder="e.g. Alex"
+                          {...register('senderName', { required: 'Your name is required' })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.field} style={{ marginTop: 16 }}>
+                      <label className={styles.label} htmlFor="customMessage">
+                        Personal Message <span className={styles.optional}>(shown after they say Yes)</span>
+                      </label>
+                      <textarea
+                        id="customMessage"
+                        className={styles.textarea}
+                        placeholder="e.g. You're the most amazing person I know. I love you endlessly. 🌹"
+                        rows={3}
+                        {...register('customMessage')}
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div className={styles.divider} />
 
-                <div className={styles.field}>
-                  <label className={styles.label} htmlFor="customMessage">
-                    {selectedTemplate === 'birthday' ? 'Birthday Message ' : 'Personal Message '}
-                    <span className={styles.optional}>
-                      {selectedTemplate === 'birthday' ? '(shown on reveal)' : '(shown after they say Yes)'}
-                    </span>
-                  </label>
-                  <textarea
-                    id="customMessage"
-                    className={styles.textarea}
-                    placeholder="e.g. You're the most amazing person I know. I love you endlessly. 🌹"
-                    rows={3}
-                    {...register('customMessage')}
-                  />
-                </div>
-
+                {/* ── PHOTO UPLOAD ── */}
                 <div className={styles.field}>
                   <label className={styles.label}>
-                    Photo{' '}
-                    <span className={styles.optional}>
-                      {selectedTemplate === 'birthday' ? '(optional — shown on reveal)' : '(optional — shown after Yes)'}
+                    {isBirthday ? 'Add a Birthday Photo' : 'Photo'} <span className={styles.optional}>
+                      {isBirthday ? '(shown in Birthday Card)' : '(optional — shown after Yes)'}
                     </span>
                   </label>
                   <div
                     className={`${styles.uploadZone} ${photoPreview ? styles.uploadZoneHasPhoto : ''}`}
                     onClick={() => !photoPreview && fileInputRef.current?.click()}
-                    role={photoPreview ? undefined : 'button'}
-                    tabIndex={photoPreview ? undefined : 0}
-                    onKeyDown={(e) => e.key === 'Enter' && !photoPreview && fileInputRef.current?.click()}
                   >
                     <input
                       type="file"
@@ -356,19 +408,14 @@ export default function ProposalCreator() {
                     {photoPreview ? (
                       <div className={styles.photoPreview} onClick={(e) => e.stopPropagation()}>
                         <img src={photoPreview} alt="Preview" className={styles.previewImg} />
-                        <button
-                          type="button"
-                          className={styles.removePhotoBtn}
-                          onClick={removePhoto}
-                          aria-label="Remove photo"
-                        >
+                        <button type="button" className={styles.removePhotoBtn} onClick={removePhoto}>
                           <X size={14} />
                         </button>
                       </div>
                     ) : (
                       <div className={styles.uploadPrompt}>
-                        <Upload size={22} className={styles.uploadIcon} />
-                        <span className={styles.uploadTitle}>Upload a photo</span>
+                        {isBirthday ? <Gift size={22} className={styles.uploadIcon} /> : <Upload size={22} className={styles.uploadIcon} />}
+                        <span className={styles.uploadTitle}>{isBirthday ? 'Upload a birthday photo' : 'Upload a photo'}</span>
                         <span className={styles.uploadSub}>JPG, PNG — max 2MB</span>
                       </div>
                     )}
@@ -376,27 +423,46 @@ export default function ProposalCreator() {
                 </div>
 
                 {error && (
-                  <p className={styles.submitError}>
-                    ⚠ Failed to create proposal — {error.message}
-                  </p>
+                  <p className={styles.submitError}>⚠ Failed to create — {error.message}</p>
                 )}
 
-                <button
-                  type="submit"
-                  className={styles.submitBtn}
-                  disabled={loading}
-                  id="generate-proposal-btn"
-                >
-                  {loading ? (
-                    <span className={styles.spinner} />
-                  ) : (
-                    <>
-                      <Sparkles size={18} />
-                      {selectedTemplate === 'birthday' ? 'Generate Birthday Page' : 'Generate My Proposal'}
-                    </>
+                <button type="submit" className={styles.submitBtn} disabled={loading}>
+                  {loading ? <span className={styles.spinner} /> : (
+                    <>{isBirthday ? <Gift size={18} /> : <Sparkles size={18} />}{isBirthday ? 'Generate Birthday Surprise' : 'Generate My Proposal'}</>
                   )}
                 </button>
               </form>
+
+              {/* ── LIVE PREVIEW CARD (BIRTHDAY ONLY) ── */}
+              {isBirthday && (liveRecipientName || liveMessage || liveSenderName || photoPreview) && (
+                <motion.div 
+                  className={styles.livePreviewWrapper}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                >
+                  <div className={styles.livePreviewCard}>
+                    {liveAge && !isNaN(Number(liveAge)) && (
+                      <div className={styles.previewAgeBadge}>Turning {liveAge}!</div>
+                    )}
+                    <div className={styles.previewHeader}>
+                      🎉 Happy Birthday {liveNickname ? `"${liveNickname}"` : (liveRecipientName || 'Sarah')} 🎂
+                    </div>
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Live Preview" className={styles.previewPhoto} />
+                    ) : (
+                      <div className={styles.previewPhoto} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a792d4' }}>
+                        <ImageIcon size={32} />
+                      </div>
+                    )}
+                    <div className={styles.previewMessage}>
+                      {liveMessage || 'Wishing you a year full of happiness and success. 🎂✨'}
+                    </div>
+                    <div className={styles.previewSender}>
+                      From {liveSenderName || 'Alex'} ❤️
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -407,31 +473,23 @@ export default function ProposalCreator() {
               className={styles.shareCard}
               initial={{ opacity: 0, scale: 0.93, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.5, type: 'spring', bounce: 0.3 }}
             >
               <div className={styles.shareSuccess}>
                 <div className={styles.successRing}>
                   <Check size={32} strokeWidth={2.5} />
                 </div>
-                <h2 className={styles.shareTitle}>Your Proposal is Ready! 🎉</h2>
+                <h2 className={styles.shareTitle}>
+                  {isBirthday ? '🎉 Birthday Surprise Ready' : 'Your Proposal is Ready! 🎉'}
+                </h2>
                 <p className={styles.shareSub}>
                   Preview it first, then unlock sharing to send to your special someone.
                 </p>
               </div>
 
-              {/* Preview button — always visible */}
-              <a
-                href={`/p/${proposalId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.previewLink}
-                id="preview-proposal-link"
-              >
-                <ExternalLink size={15} />
-                Preview Proposal
+              <a href={`/p/${proposalId}`} target="_blank" rel="noopener noreferrer" className={styles.previewLink}>
+                <ExternalLink size={15} /> Preview {isBirthday ? 'Surprise' : 'Proposal'}
               </a>
 
-              {/* Share Gate */}
               {!shareUnlocked ? (
                 <ShareLockCard
                   proposalId={proposalId}
@@ -441,37 +499,16 @@ export default function ProposalCreator() {
                   template={selectedTemplate}
                 />
               ) : (
-                /* ── Share Actions (unlocked) ── */
-                <motion.div
-                  className={styles.unlockedShare}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: 'spring', bounce: 0.3 }}
-                >
+                <motion.div className={styles.unlockedShare} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                   <p className={styles.unlockedLabel}>✅ Sharing unlocked! Send it now:</p>
                   <div className={styles.shareActions}>
-                    <button
-                      type="button"
-                      className={styles.shareBtn}
-                      onClick={handleShare}
-                      id="universal-share-btn"
-                    >
-                      📱 Share Proposal
-                    </button>
+                    <button type="button" className={styles.shareBtn} onClick={handleShare}>📱 Share Link</button>
                   </div>
                 </motion.div>
               )}
 
-              <button
-                type="button"
-                className={styles.anotherBtn}
-                onClick={() => {
-                  setProposalId('');
-                  setShareUrl('');
-                  setShareUnlocked(false);
-                }}
-              >
-                Create another proposal
+              <button type="button" className={styles.anotherBtn} onClick={() => { setProposalId(''); setShareUrl(''); setShareUnlocked(false); }}>
+                Create another {isBirthday ? 'surprise' : 'proposal'}
               </button>
             </motion.div>
           )}
