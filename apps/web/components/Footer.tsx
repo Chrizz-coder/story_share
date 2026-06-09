@@ -52,15 +52,15 @@ export default function Footer() {
 
       <div className={styles.footerBottom}>
         <p className={styles.footerCopy}>
-          © {new Date().getFullYear()} StoryShare. Crafted with <span className={styles.heart}>❤️</span> by{' '}
+          © 2026 StoryShare. Crafted with <span className={styles.heart}>❤️</span> by{' '}
           <a 
-            href="https://www.linkedin.com/in/christin-mp/" 
+            href="https://www.instagram.com/steffin.____?utm_source=qr&igsh=b3I0cmZsZTk2OWk3" 
             target="_blank" 
             rel="noopener noreferrer"
-            className={styles.authorLink}
+            className={styles.stefinLink}
           >
-            Christin MP
-          </a>.
+            Stefin
+          </a>
         </p>
       </div>
     </footer>
