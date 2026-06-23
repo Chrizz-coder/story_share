@@ -9,14 +9,29 @@ Check out the live platform here: **[https://story-share.app/](https://story-sha
 ## About StoryShare
 StoryShare is a high-fidelity, interactive, and viral-ready digital greeting experience platform. It enables users to create, customize, and share magical moments—from beautifully animated birthday templates to highly immersive, interactive romantic proposals.
 
-Built with a focus on modern, mobile-responsive design, StoryShare provides a premium viewer experience including:
-- **Interactive Proposal Creator & Viewer**: Features thematic particle engines and global audio context for a seamless soundtrack integration.
-- **Premium Birthday Templates**: A 3-stage viewer experience (Intro, Magical Gift Opening, Card Reveal) enriched with Framer Motion animations.
-- **Seamless Payments**: Fully integrated with Razorpay for unlocking premium templates.
-- **Modern Tech Stack**: 
-  - **Frontend**: Next.js, Apollo Client, Framer Motion, Next-Auth.
-  - **Backend**: Node.js, Express, Apollo Server (GraphQL), Mongoose, Zod.
-  - **Monorepo**: Managed with `pnpm`.
+## Key Features
+
+- **Premium Payment Integration**: Fully integrated with **Razorpay** to securely process payments for unlocking premium templates and experiences.
+- **Interactive Proposal Creator & Viewer**: Features an engaging creation flow, thematic particle engines, and global audio context for a seamless soundtrack integration.
+- **Premium Birthday Experiences**: A multi-stage interactive viewer experience (Intro, Magical Gift Opening, Card Reveal) heavily enriched with Framer Motion animations.
+- **Real-Time Features**: GraphQL API supporting fast, dynamic data fetching and subscriptions.
+- **Secure Authentication**: User authentication and session management powered by Next-Auth.
+- **Mobile-First Design**: Responsive UI that looks and feels native on all devices with high-fidelity micro-interactions and a glassmorphism aesthetic.
+
+## Project Structure
+
+This project is set up as a monorepo using `pnpm` workspaces, dividing the architecture into distinct, scalable applications:
+
+```text
+dynamic-site/
+├── apps/
+│   ├── web/        # Next.js frontend application (React, Apollo Client, Framer Motion)
+│   └── api/        # Node.js backend API (Express, Apollo Server GraphQL, MongoDB)
+└── package.json    # Monorepo root workspace configuration
+```
+
+- **`apps/web`**: Contains the Next.js frontend. It is responsible for the user interface, client-side routing, rich animations, and interacting with the GraphQL API.
+- **`apps/api`**: Contains the Node.js backend. It handles business logic, database models (Mongoose), GraphQL schema and resolvers, and third-party integrations like Razorpay for payments and Nodemailer.
 
 ## How to Setup
 
