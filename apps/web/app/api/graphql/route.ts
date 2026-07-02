@@ -39,6 +39,11 @@ if (
 export async function POST(req: NextRequest) {
   const body = await req.text();
 
+  // TEMPORARY DEBUG
+  console.log("Incoming Request");
+  console.log("BACKEND_URL =", BACKEND_URL);
+  console.log("Forwarding Request To =", BACKEND_URL);
+
   // ── Debug logging (dev only) ───────────────────────────────────────
   if (process.env.NODE_ENV === 'development') {
     try {
