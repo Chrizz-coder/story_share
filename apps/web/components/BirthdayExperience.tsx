@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useAudio } from '@/context/AudioContext';
+import { getCategoryMusicUrl } from '@/lib/proposalAudio';
 import HomeButton from '@/components/HomeButton';
 import Footer from '@/components/Footer';
 import styles from './BirthdayExperience.module.css';
@@ -14,6 +15,7 @@ type GiftAnim = 'IDLE' | 'WIGGLE' | 'GLOW' | 'PULSE' | 'EXPLODE' | 'DONE';
 export default function BirthdayExperience({ proposal }: { proposal: any }) {
   const [stage, setStage] = useState<Stage>('INTRO');
   const [giftAnim, setGiftAnim] = useState<GiftAnim>('IDLE');
+  const [musicStarted, setMusicStarted] = useState(false);
   const { playTrack } = useAudio();
 
   // Ambient particles
@@ -33,16 +35,14 @@ export default function BirthdayExperience({ proposal }: { proposal: any }) {
     delay: Math.random() * 2
   }));
 
-  // Auto-play music on mount (browser permitting)
-  useEffect(() => {
-    // We try to autoplay. If it fails due to browser policy, 
-    // it will definitely play when they click "Open My Gift".
-    playTrack('/music/birthday.mp3', { volume: 0.5, loop: true });
-  }, [playTrack]);
-
   const runGiftSequence = () => {
-    // Ensure music is playing
-    playTrack('/music/birthday.mp3', { volume: 0.5, loop: true });
+    // Mirror Romantic: Only trigger music once, strictly on user interaction
+    if (!musicStarted) {
+      const musicCategory = proposal.music ?? 'birthday';
+      const musicUrl = getCategoryMusicUrl(musicCategory);
+      playTrack(musicUrl, { volume: 0.5, loop: true });
+      setMusicStarted(true);
+    }
     
     setStage('GIFT_OPENING');
     
