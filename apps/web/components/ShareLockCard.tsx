@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   createShareOrder,
   verifyPayment,
-  mockSetShareUnlocked,
 } from '@/lib/paymentService';
 import styles from './ShareLockCard.module.css';
 
@@ -13,6 +12,8 @@ interface ShareLockCardProps {
   proposalId: string;
   shareUrl: string;
   onUnlocked: () => void;
+  userEmail?: string;
+  template?: string;
 }
 
 type FlowStage = 'LOCKED' | 'PROCESSING' | 'SUCCESS';
@@ -27,26 +28,41 @@ type FlowStage = 'LOCKED' | 'PROCESSING' | 'SUCCESS';
  *   1. Replace mock logic in lib/paymentService.ts
  *   2. Load Razorpay script and pass orderId to Razorpay checkout
  */
-export default function ShareLockCard({ proposalId, shareUrl, onUnlocked }: ShareLockCardProps) {
+export default function ShareLockCard({ proposalId, shareUrl, onUnlocked, userEmail, template }: ShareLockCardProps) {
   const [stage, setStage] = useState<FlowStage>('LOCKED');
   const [error, setError] = useState('');
 
   const handleUnlock = async () => {
+    if (!userEmail) {
+      setError('Please sign in to unlock sharing.');
+      return;
+    }
+
     setStage('PROCESSING');
     setError('');
     try {
-      const order = await createShareOrder(proposalId);
+      // 1. Create Order
+      const orderResult = await createShareOrder(proposalId, userEmail, template);
+      if (!orderResult.success || !orderResult.order) {
+        throw new Error(orderResult.error || 'Failed to create order');
+      }
 
-      // ── TODO: Replace this block with real Razorpay checkout ────────
-      // const { paymentId, signature } = await openRazorpayCheckout(order);
-      // const result = await verifyPayment(order.orderId, paymentId, signature, proposalId);
-      // ────────────────────────────────────────────────────────────────
+      // 2. Open Razorpay Checkout
+      const { paymentId, signature } = await new Promise<{ paymentId: string; signature: string }>((resolve, reject) => {
+        // Assume openRazorpayPayment exists in lib/paymentService and it handles the popup
+        import('@/lib/razorpay').then(({ openRazorpayPayment }) => {
+          openRazorpayPayment(
+            orderResult.order,
+            (paymentData) => resolve({ paymentId: paymentData.paymentId, signature: paymentData.signature }),
+            (err) => reject(err)
+          );
+        }).catch(err => reject(err));
+      });
 
-      // ── Mock: auto-succeed ──
-      const result = await verifyPayment(order.orderId, 'mock_payment_id', 'mock_sig', proposalId);
+      // 3. Verify Payment
+      const verifyResult = await verifyPayment(orderResult.order.orderId, paymentId, signature, proposalId);
 
-      if (result.success) {
-        mockSetShareUnlocked(proposalId);
+      if (verifyResult.success) {
         setStage('SUCCESS');
         setTimeout(onUnlocked, 1400);
       } else {

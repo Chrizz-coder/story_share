@@ -20,19 +20,20 @@ import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
  * out-of-the-box without any env vars.
  */
 function getApiUri(): string {
-  // On the browser, NEXT_PUBLIC_API_URL is embedded at build time.
+  // On the browser, always use the relative proxy route.
+  // We do NOT use NEXT_PUBLIC_API_URL here to prevent 405 routing errors.
   if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL ?? '/api/graphql';
+    // TEMPORARY DEBUG
+    console.log("[Apollo] CLIENT URI: /api/graphql");
+    return '/api/graphql';
   }
 
-  // On the server (SSR), we need an absolute URL.
-  // If the developer set NEXT_PUBLIC_API_URL, use that.
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
-  }
-
-  // Otherwise fall back to the local dev API.
-  return 'http://localhost:4000/graphql';
+  // On the server (SSR), we need an absolute URL to the backend.
+  // Use the server-only API_URL.
+  const ssrUri = process.env.API_URL || 'http://localhost:4000/graphql';
+  // TEMPORARY DEBUG
+  console.log("[Apollo] SERVER URI:", ssrUri);
+  return ssrUri;
 }
 
 function makeClient() {

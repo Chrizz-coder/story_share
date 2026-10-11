@@ -25,6 +25,7 @@ export const PaymentMutations = {
   async createOrder(
     _: unknown,
     args: {
+      productCategory: string;
       productType: string;
       productName: string;
       amount: number;
@@ -42,7 +43,7 @@ export const PaymentMutations = {
       });
     }
 
-    const { productType, productName, amount, email, metadata } = validation.data;
+    const { productCategory, productType, productName, amount, email, metadata } = validation.data;
 
     const razorpay = getRazorpayClient();
 
@@ -72,6 +73,7 @@ export const PaymentMutations = {
         email,
         amount,
         currency: 'INR',
+        productCategory,
         productType,
         productName,
         paymentStatus: 'pending',

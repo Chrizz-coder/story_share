@@ -9,10 +9,10 @@ import styles from './PaymentModal.module.css';
 
 type Plan = 'starter' | 'premium' | 'creator';
 
-const PLAN_CONFIG: Record<Plan, { name: string; amount: number; productType: string }> = {
-  starter:  { name: 'Starter Plan',  amount: 9900,  productType: 'subscription' },
-  premium:  { name: 'Premium Plan',  amount: 29900, productType: 'premium' },
-  creator:  { name: 'Creator Plan',  amount: 99900, productType: 'premium' },
+const PLAN_CONFIG: Record<Plan, { name: string; amount: number; productCategory: string; productType: string }> = {
+  starter:  { name: 'Starter Plan',  amount: 9900,  productCategory: 'plan', productType: 'starter' },
+  premium:  { name: 'Premium Plan',  amount: 29900, productCategory: 'plan', productType: 'premium' },
+  creator:  { name: 'Creator Plan',  amount: 99900, productCategory: 'plan', productType: 'creator' },
 };
 
 interface FormData {
@@ -56,6 +56,7 @@ export default function PaymentModal({ isOpen, onClose, plan }: PaymentModalProp
       // 1. Create order via GraphQL
       const { data: orderData, errors: orderErrors } = await createOrder({
         variables: {
+          productCategory: config.productCategory,
           productType: config.productType,
           productName: config.name,
           amount: config.amount,

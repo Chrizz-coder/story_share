@@ -16,6 +16,7 @@ export const typeDefs = gql`
     email: String!
     amount: Int!
     currency: String!
+    productCategory: String!
     productType: String!
     productName: String!
     paymentStatus: String!
@@ -46,9 +47,12 @@ export const typeDefs = gql`
     customMessage: String!
     theme: String!
     music: String!
+    age: Int
+    nickname: String
     photoData: String
     viewCount: Int!
     accepted: Boolean!
+    shareUnlocked: Boolean!
     createdAt: Date!
   }
 
@@ -59,6 +63,8 @@ export const typeDefs = gql`
     customMessage: String
     theme: String!
     music: String!
+    age: Int
+    nickname: String
     photoData: String
   }
 
@@ -70,6 +76,7 @@ export const typeDefs = gql`
 
   type Mutation {
     createOrder(
+      productCategory: String!
       productType: String!
       productName: String!
       amount: Int!
@@ -86,5 +93,6 @@ export const typeDefs = gql`
     createProposal(input: ProposalInput!): Proposal!
     acceptProposal(id: ID!): Proposal!
     incrementViewCount(id: ID!): Proposal!
+    unlockProposalSharing(proposalId: ID!, orderId: String!): Proposal!
   }
 `;

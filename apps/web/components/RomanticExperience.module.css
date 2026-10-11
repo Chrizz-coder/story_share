@@ -1,0 +1,486 @@
+/* ─────────────────────────────────────────────────────────────────────
+   Proposal Recipient — Cinematic Experience
+   ───────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&display=swap');
+
+/* ── Page ─────────────────────────────────────────────────────────── */
+.page {
+  min-height: 100dvh;
+  width: 100%;
+  background: linear-gradient(
+    160deg,
+    #1a0010 0%,
+    #3b0025 25%,
+    #6b0039 55%,
+    #c2185b 85%,
+    #e91e63 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 24px 16px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+/* ── Floating Hearts Layer ────────────────────────────────────────── */
+.heartsLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.floatingHeart {
+  position: absolute;
+  background: radial-gradient(circle at 30% 30%, #ff9ab5, #ff4d79);
+  border-radius: 50% 0 50% 50%;
+  transform: rotate(-45deg);
+  animation: riseHeart linear infinite;
+}
+
+.floatingHeart::before,
+.floatingHeart::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+}
+.floatingHeart::before { top: -50%; left: 0; }
+.floatingHeart::after  { top: 0;   left: 50%; }
+
+@keyframes riseHeart {
+  0%   { transform: rotate(-45deg) translateY(0) scale(0.8);  opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: rotate(-45deg) translateY(-110vh) scale(1.1); opacity: 0; }
+}
+
+/* ── Sparkles Layer ───────────────────────────────────────────────── */
+.sparklesLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 77, 121, 0.5);
+  animation: twinkle ease-in-out infinite;
+  animation-duration: 3s;
+}
+
+.sparkle::before {
+  content: '✦';
+  position: absolute;
+  top: -6px;
+  left: -4px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  animation: spin 6s linear infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  50%       { opacity: 0.9;  transform: scale(1.3); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Content ──────────────────────────────────────────────────────── */
+.content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+/* ── Text Stages ──────────────────────────────────────────────────── */
+.textWrap,
+.introWrap,
+.buttonsWrap,
+.acceptedWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.introHeart {
+  font-size: clamp(56px, 12vw, 96px);
+  animation: heartBeat 1.2s ease-in-out infinite;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  14%       { transform: scale(1.2); }
+  28%       { transform: scale(1); }
+  42%       { transform: scale(1.1); }
+  70%       { transform: scale(1); }
+}
+
+.greetingText {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 8vw, 56px);
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 40px rgba(255, 77, 121, 0.5);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.teaserText {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(18px, 4.5vw, 28px);
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 0 30px rgba(255, 77, 121, 0.4);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Typewriter / Question ────────────────────────────────────────── */
+.questionText {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 6.5vw, 48px);
+  font-weight: 700;
+  color: #fff;
+  text-shadow:
+    0 0 20px rgba(255, 77, 121, 0.6),
+    0 4px 24px rgba(0, 0, 0, 0.3);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.cursor {
+  display: inline-block;
+  width: 3px;
+  background: #fff;
+  margin-left: 2px;
+  animation: blink 0.7s step-end infinite;
+  vertical-align: middle;
+  height: 0.85em;
+}
+
+.cursorHide {
+  opacity: 0;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────── */
+.btnsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.yesBtn {
+  padding: 18px 48px;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #ff4d79 0%, #e91e63 50%, #c2185b 100%);
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: clamp(18px, 4vw, 22px);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 4px rgba(255, 77, 121, 0.3),
+    0 8px 32px rgba(255, 77, 121, 0.6);
+  transition: box-shadow 0.2s;
+  letter-spacing: 0.02em;
+  position: relative;
+  z-index: 2;
+}
+
+.yesBtn:hover {
+  box-shadow:
+    0 0 0 6px rgba(255, 77, 121, 0.35),
+    0 12px 40px rgba(255, 77, 121, 0.7);
+}
+
+.noBtn {
+  padding: 14px 28px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.85);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: clamp(14px, 3vw, 17px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.noBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.fromText {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: clamp(13px, 3vw, 16px);
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Accepted Screen ──────────────────────────────────────────────── */
+.yayEmoji {
+  font-size: clamp(56px, 12vw, 88px);
+  filter: drop-shadow(0 0 20px rgba(255, 77, 121, 0.8));
+}
+
+.yayTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 7vw, 52px);
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(255, 77, 121, 0.5);
+  margin: 0;
+}
+
+.messageCard {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 24px 28px;
+  max-width: 440px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.messageText {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(16px, 3.5vw, 20px);
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.messageSender {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  text-align: right;
+}
+
+.photoWrap {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.15),
+    0 16px 48px rgba(0, 0, 0, 0.4);
+  max-width: 280px;
+  width: 100%;
+}
+
+.photo {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* ── Loading Spinner ──────────────────────────────────────────────── */
+.loadingSpinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #ff4d79;
+  border-radius: 50%;
+  animation: spinLoad 0.8s linear infinite;
+}
+
+@keyframes spinLoad {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Not Found ────────────────────────────────────────────────────── */
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 40px 32px;
+  max-width: 360px;
+}
+
+.notFoundIcon {
+  font-size: 48px;
+}
+
+.notFoundTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: #fff;
+  margin: 0;
+}
+
+.notFoundText {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.backHome {
+  display: inline-block;
+  padding: 11px 24px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.backHome:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Envelope / Tap to Open ───────────────────────────────────────── */
+.envelopeWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.openBtn {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  padding: 18px 40px;
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.openBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+}
+
+.envelopeText {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+  margin: 0;
+}
+
+.shareToast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  color: #c2185b;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 30px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.floatingShareBtn {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50px;
+  padding: 14px 28px;
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.floatingShareBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .btnsRow {
+    gap: 16px;
+  }
+
+  .yesBtn {
+    padding: 16px 36px;
+  }
+
+  .noBtn {
+    padding: 12px 22px;
+  }
+
+  .messageCard {
+    padding: 18px 20px;
+  }
+
+  .floatingShareBtn {
+    bottom: 20px;
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+}

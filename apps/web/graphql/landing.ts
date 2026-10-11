@@ -3,6 +3,7 @@ import { gql } from '@apollo/client';
 
 export const CREATE_ORDER = gql`
   mutation CreateOrder(
+    $productCategory: String!
     $productType: String!
     $productName: String!
     $amount: Int!
@@ -10,6 +11,7 @@ export const CREATE_ORDER = gql`
     $metadata: String
   ) {
     createOrder(
+      productCategory: $productCategory
       productType: $productType
       productName: $productName
       amount: $amount

@@ -7,9 +7,12 @@ export interface IProposal extends Document {
   customMessage?: string;
   theme: string;
   music: string;
+  age?: number;
+  nickname?: string;
   photoData?: string;
   viewCount: number;
   accepted: boolean;
+  shareUnlocked: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,9 +29,12 @@ const ProposalSchema: Schema = new Schema(
     customMessage: { type: String, default: '' },
     theme: { type: String, required: true },
     music: { type: String, required: true },
+    age: { type: Number },
+    nickname: { type: String },
     photoData: { type: String }, // Optional Base64 or URL
     viewCount: { type: Number, default: 0 },
     accepted: { type: Boolean, default: false },
+    shareUnlocked: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

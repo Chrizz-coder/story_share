@@ -5,18 +5,44 @@
  * Benefits:
  *  - Eliminates all CORS issues (same-origin from the browser's perspective)
  *  - Works in dev (→ localhost:4000) and production (→ Render URL)
- *  - NEXT_PUBLIC_API_URL is no longer required for basic operation
+ *
+ * Environment variable priority (server-side only):
+ *  1. API_URL           — server-only var, set this in Vercel for production
+ *                         e.g. API_URL=https://<service>.onrender.com/graphql
+ *  2. NEXT_PUBLIC_API_URL — fallback only; prefer API_URL to avoid accidental
+ *                           misuse (NEXT_PUBLIC_ vars are also embedded in the
+ *                           browser bundle and should not hold backend URLs)
+ *  3. http://localhost:4000/graphql — local dev fallback
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.API_URL ||
-  'http://localhost:4000/graphql';
+  process.env.API_URL ||               // server-only var — always check first
+  process.env.NEXT_PUBLIC_API_URL ||   // public/build-time var — secondary fallback
+  'http://localhost:4000/graphql';     // local dev fallback
+
+// Warn loudly in production if neither variable is configured.
+// This surfaces immediately in Vercel Runtime Logs.
+if (
+  process.env.NODE_ENV === 'production' &&
+  !process.env.API_URL &&
+  !process.env.NEXT_PUBLIC_API_URL
+) {
+  console.error(
+    '[GraphQL Proxy] ❌ CRITICAL: No backend URL configured. ' +
+    'Set API_URL=https://<your-render-service>.onrender.com/graphql ' +
+    'in Vercel environment variables and redeploy.'
+  );
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
+
+  // TEMPORARY DEBUG
+  console.log("Incoming Request");
+  console.log("BACKEND_URL =", BACKEND_URL);
+  console.log("Forwarding Request To =", BACKEND_URL);
 
   // ── Debug logging (dev only) ───────────────────────────────────────
   if (process.env.NODE_ENV === 'development') {
