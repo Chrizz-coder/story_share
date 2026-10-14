@@ -3,6 +3,7 @@ import './globals.css';
 import ApolloWrapper from '@/components/ApolloWrapper';
 import { AudioProvider } from '@/context/AudioContext';
 import NextAuthProvider from '@/components/NextAuthProvider';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   title: 'StoryShare — Create & Share Your Moments',
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </AudioProvider>
           </NextAuthProvider>
         </ApolloWrapper>
+        <SpeedInsights />
       </body>
     </html>
   );
